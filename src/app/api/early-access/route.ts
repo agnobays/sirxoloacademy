@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { getDbPool, initDatabase } from "@/lib/db";
 
 const dataDir = path.join(process.cwd(), "data");
 const filePath = path.join(dataDir, "early_registrations.json");
@@ -16,6 +17,7 @@ interface RegistrationRecord {
   workbookInterest: boolean;
   notes?: string;
   createdAt: string;
+  savedToMySQL?: boolean;
 }
 
 function ensureDataFile() {
@@ -24,6 +26,18 @@ function ensureDataFile() {
   }
   if (!fs.existsSync(filePath)) {
     fs.writeFileSync(filePath, JSON.stringify([], null, 2), "utf-8");
+  }
+}
+
+function saveLocalBackup(record: RegistrationRecord) {
+  try {
+    ensureDataFile();
+    const fileContent = fs.readFileSync(filePath, "utf-8");
+    const records: RegistrationRecord[] = JSON.parse(fileContent);
+    records.push(record);
+    fs.writeFileSync(filePath, JSON.stringify(records, null, 2), "utf-8");
+  } catch (err) {
+    console.error("Local backup write failed:", err);
   }
 }
 
@@ -39,13 +53,37 @@ export async function POST(req: Request) {
       );
     }
 
-    ensureDataFile();
+    const recordId = "reg_" + Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
+    let savedToMySQL = false;
 
-    const fileContent = fs.readFileSync(filePath, "utf-8");
-    const records: RegistrationRecord[] = JSON.parse(fileContent);
+    // 1. Attempt MySQL insertion
+    try {
+      await initDatabase();
+      const pool = getDbPool();
+      const insertQuery = `
+        INSERT INTO parent_registrations 
+        (id, parent_name, email, phone, child_name, child_age, subjects, workbook_interest, notes)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `;
+      await pool.execute(insertQuery, [
+        recordId,
+        String(parentName).trim(),
+        String(email).trim().toLowerCase(),
+        String(phone).trim(),
+        String(childName || "").trim(),
+        String(childAge || "").trim(),
+        JSON.stringify(Array.isArray(subjects) ? subjects : []),
+        Boolean(workbookInterest),
+        notes ? String(notes).trim() : null,
+      ]);
+      savedToMySQL = true;
+    } catch (dbErr) {
+      console.warn("MySQL insert notice (fallback to local backup enabled):", dbErr);
+    }
 
-    const newRecord: RegistrationRecord = {
-      id: "reg_" + Date.now().toString(36) + Math.random().toString(36).substring(2, 6),
+    // 2. Always persist a local JSON backup as well
+    const record: RegistrationRecord = {
+      id: recordId,
       parentName: String(parentName).trim(),
       email: String(email).trim().toLowerCase(),
       phone: String(phone).trim(),
@@ -55,15 +93,16 @@ export async function POST(req: Request) {
       workbookInterest: Boolean(workbookInterest),
       notes: notes ? String(notes).trim() : undefined,
       createdAt: new Date().toISOString(),
+      savedToMySQL,
     };
 
-    records.push(newRecord);
-    fs.writeFileSync(filePath, JSON.stringify(records, null, 2), "utf-8");
+    saveLocalBackup(record);
 
     return NextResponse.json({
       success: true,
       message: "Thank you for registering! We have secured your spot for early access.",
-      id: newRecord.id,
+      id: recordId,
+      savedToDb: savedToMySQL,
     });
   } catch (error) {
     console.error("Error saving early registration:", error);
@@ -76,15 +115,28 @@ export async function POST(req: Request) {
 
 export async function GET() {
   try {
-    ensureDataFile();
-    const fileContent = fs.readFileSync(filePath, "utf-8");
-    const records: RegistrationRecord[] = JSON.parse(fileContent);
-
-    return NextResponse.json({
-      success: true,
-      count: records.length,
-      data: records,
-    });
+    // Try reading from MySQL first
+    try {
+      await initDatabase();
+      const pool = getDbPool();
+      const [rows] = await pool.query("SELECT * FROM parent_registrations ORDER BY created_at DESC");
+      return NextResponse.json({
+        success: true,
+        source: "mysql",
+        data: rows,
+      });
+    } catch (mysqlErr) {
+      // Fallback to local file store
+      ensureDataFile();
+      const fileContent = fs.readFileSync(filePath, "utf-8");
+      const records: RegistrationRecord[] = JSON.parse(fileContent);
+      return NextResponse.json({
+        success: true,
+        source: "file_backup",
+        count: records.length,
+        data: records,
+      });
+    }
   } catch (error) {
     return NextResponse.json({ error: "Failed to read records." }, { status: 500 });
   }
