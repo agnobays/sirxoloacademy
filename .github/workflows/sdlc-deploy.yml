@@ -1,0 +1,58 @@
+name: Sir Xolo Academy SDLC & Deployment Pipeline
+
+on:
+  push:
+    branches:
+      - dev
+      - qa
+      - main
+
+jobs:
+  build-and-test:
+    name: Build & Validate (SDLC)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Verify Build
+        run: npm run build
+
+  deploy-to-hosting:
+    name: Deploy to Production Hosting (sirxoloacademy.co.za)
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Deploy to Hosting Git Repository
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.HOSTING_SSH_KEY }}
+        run: |
+          if [ -n "$SSH_PRIVATE_KEY" ]; then
+            mkdir -p ~/.ssh
+            echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+            chmod 600 ~/.ssh/id_rsa
+            ssh-keyscan -H da43.host-ww.net >> ~/.ssh/known_hosts
+            git remote add hosting sirxoloa@da43.host-ww.net:domains/sirxoloacademy.co.za/sirxolo.git
+            git push hosting main --force
+          else
+            echo "HOSTING_SSH_KEY not yet configured in GitHub Secrets. Skipping automated remote push."
+          fi
