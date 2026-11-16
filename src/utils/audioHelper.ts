@@ -1,3 +1,5 @@
+import { resolveSoundUrl } from "./voiceRegistry";
+
 // Web Audio API Synthesizer & Speech Helper for child-friendly instant feedback
 
 class AudioEngine {
@@ -84,11 +86,12 @@ class AudioEngine {
     });
   }
 
-  // Cheerful audio cheer on correct answer (Plays authentic Hooray audio from YouTube)
-  playHooray(isZulu = false) {
+  // Cheerful audio cheer on correct answer (Plays Mr. Xolo's voice if chosen, or default Hooray audio)
+  async playHooray(isZulu = false) {
     if (typeof window !== "undefined") {
       try {
-        const audio = new Audio("/audio/hooray.mp3");
+        const audioPath = await resolveSoundUrl("correct");
+        const audio = new Audio(audioPath);
         audio.currentTime = 0;
         const promise = audio.play();
         if (promise !== undefined) {
@@ -241,21 +244,19 @@ class AudioEngine {
     await this.speakUtterance(promptText, lang);
   }
 
-  // Play authentic recorded letter sound file from Sound City Reading
-  playRecordedPhoneme(letter: string): Promise<boolean> {
+  // Play authentic recorded letter sound file (supports Mr. Xolo's custom recording or default)
+  async playRecordedPhoneme(letter: string): Promise<boolean> {
+    const clean = letter.trim().toLowerCase().replace(/[^a-z]/g, "");
+    if (!clean) return false;
+
+    const audioPath = await resolveSoundUrl(clean);
+
     return new Promise((resolve) => {
       if (typeof window === "undefined") {
         resolve(false);
         return;
       }
 
-      const clean = letter.trim().toLowerCase().replace(/[^a-z]/g, "");
-      if (!clean) {
-        resolve(false);
-        return;
-      }
-
-      const audioPath = `/audio/phonics/${clean}.mp3`;
       const audio = new Audio(audioPath);
 
       audio.onended = () => {
@@ -263,7 +264,7 @@ class AudioEngine {
       };
 
       audio.onerror = () => {
-        console.warn(`Could not load /audio/phonics/${clean}.mp3`);
+        console.warn(`Could not load audio path: ${audioPath}`);
         resolve(false);
       };
 

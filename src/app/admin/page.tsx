@@ -11,12 +11,14 @@ import {
   Save,
   CheckCircle2,
   Trash2,
+  Mic,
 } from "lucide-react";
 import { SUBJECTS, SKILL_STEPS } from "@/data/curriculumData";
 import { SubjectId } from "@/types/curriculum";
+import VoiceStudioManager from "@/components/VoiceStudioManager";
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<"lessons" | "questions" | "storybooks" | "store">("lessons");
+  const [activeTab, setActiveTab] = useState<"voice_studio" | "lessons" | "questions" | "storybooks" | "store">("voice_studio");
   const [selectedSubject, setSelectedSubject] = useState<SubjectId>("english");
   const [videoUrl, setVideoUrl] = useState("");
   const [lessonTitle, setLessonTitle] = useState("");
@@ -63,6 +65,7 @@ export default function AdminPage() {
       {/* Tabs */}
       <div className="flex items-center gap-2 mb-8 border-b border-slate-200 pb-4 overflow-x-auto">
         {[
+          { id: "voice_studio", label: "🎙️ Mr. Xolo Voice Studio", icon: Mic },
           { id: "lessons", label: "Video Lessons & Steps", icon: Video },
           { id: "questions", label: "Interactive Questions", icon: FileQuestion },
           { id: "storybooks", label: "Storybook Creator", icon: BookOpen },
@@ -85,6 +88,11 @@ export default function AdminPage() {
           );
         })}
       </div>
+
+      {/* TAB 0: MR. XOLO VOICE STUDIO */}
+      {activeTab === "voice_studio" && (
+        <VoiceStudioManager />
+      )}
 
       {/* TAB 1: VIDEO LESSONS BUILDER */}
       {activeTab === "lessons" && (
