@@ -9,7 +9,7 @@ const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
-  createServer(async (req, res) => {
+  const server = createServer(async (req, res) => {
     try {
       const parsedUrl = parse(req.url, true);
       await handle(req, res, parsedUrl);
@@ -18,8 +18,14 @@ app.prepare().then(() => {
       res.statusCode = 500;
       res.end("internal server error");
     }
-  }).listen(port, (err) => {
-    if (err) throw err;
-    console.log(`> Sir Xolo Academy ready on http://${hostname}:${port}`);
   });
+
+  if (typeof PhusionPassenger !== "undefined") {
+    server.listen("passenger");
+  } else {
+    server.listen(port, (err) => {
+      if (err) throw err;
+      console.log(`> Sir Xolo Academy ready on http://${hostname}:${port}`);
+    });
+  }
 });
