@@ -143,6 +143,42 @@ class AudioEngine {
       .replace(/[/[\]]/g, " "); // Strip any remaining forward slashes or brackets so "slash" or "bracket" is NEVER uttered
   }
 
+  // Speak a standalone text string via SpeechSynthesis and resolve when speech finishes
+  speakUtterance(text: string, lang = "en-ZA"): Promise<void> {
+    return new Promise((resolve) => {
+      if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+        resolve();
+        return;
+      }
+      const clean = text
+        .replace(/[/[\]:+]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (!clean) {
+        resolve();
+        return;
+      }
+
+      const utterance = new SpeechSynthesisUtterance(clean);
+      utterance.lang = lang;
+      utterance.rate = 0.88;
+      utterance.pitch = 1.05;
+
+      const voices = window.speechSynthesis.getVoices();
+      const preferredVoice = voices.find(
+        (v) => v.lang.includes("en-ZA") || v.lang.includes("en-GB")
+      );
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
+
+      utterance.onend = () => resolve();
+      utterance.onerror = () => resolve();
+
+      window.speechSynthesis.speak(utterance);
+    });
+  }
+
   // Play an array of phoneme sounds in sequence with natural pedagogical pauses
   async playPhonemeSequence(letters: string[]): Promise<void> {
     for (const letter of letters) {
@@ -151,8 +187,11 @@ class AudioEngine {
     }
   }
 
-  // Speak question prompt and seamlessly chain the real recorded phoneme audio
-  speakQuestion(promptText: string, targetLetter?: string, lang = "en-ZA") {
+  // Speak question prompt with pedagogical sequencing:
+  // 1. Speaks lead-in ("Listen to the sound")
+  // 2. Plays authentic recorded letter audio (t.mp3)
+  // 3. Speaks question ("Which letter makes this sound?")
+  async speakQuestion(promptText: string, targetLetter?: string, lang = "en-ZA"): Promise<void> {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
 
@@ -160,49 +199,46 @@ class AudioEngine {
     const matches = Array.from(promptText.matchAll(/(?:\/|\[\s*)([a-z])(?:\/|\s*\])/gi));
     const phonemes = matches.map((m) => m[1].toLowerCase());
 
-    // Clean spoken text so it NEVER speaks "slash", "bracket", or robotic words
-    let cleanSpoken: string;
+    // 1. Multiple phonemes: Blending question (e.g. "Blend the sounds together: [s] + [a] + [t]. What word does it make?")
     if (phonemes.length > 1) {
-      // For blending questions like "Blend the sounds together: /s/ + /a/ + /t/" or "[s] + [a] + [t]"
-      cleanSpoken = "Blend the sounds together.";
-    } else if (phonemes.length === 1 || targetLetter) {
-      // Single letter question (e.g. "Listen to the sound: [s]. Which letter makes this sound?")
-      cleanSpoken = promptText
-        .replace(/(?:\/|\[\s*)([a-z])(?:\/|\s*\])/gi, "this sound")
-        .replace(/[/[\]]/g, " ");
-    } else {
-      // General instructions, descriptions, or breadcrumbs (no phoneme sound to append)
-      cleanSpoken = promptText.replace(/[/[\]]/g, " ");
+      await this.speakUtterance("Blend the sounds together.", lang);
+      await new Promise((r) => setTimeout(r, 180));
+      await this.playPhonemeSequence(phonemes);
+      await new Promise((r) => setTimeout(r, 250));
+      // Speak trailing question if present
+      const trailingMatch = promptText.match(/\.\s*([^.?!]+[?!]?)$/);
+      if (trailingMatch) {
+        await this.speakUtterance(trailingMatch[1], lang);
+      }
+      return;
     }
 
-    const utterance = new SpeechSynthesisUtterance(cleanSpoken);
-    utterance.lang = lang;
-    utterance.rate = 0.88;
-    utterance.pitch = 1.05;
+    // 2. Single letter sound question (e.g. "Listen to the sound: [ t ]. Which letter makes this sound?")
+    const singleLetter = targetLetter || (phonemes.length === 1 ? phonemes[0] : undefined);
+    if (singleLetter) {
+      // Split prompt before and after the phoneme: e.g. ["Listen to the sound:", "Which letter makes this sound?"]
+      const regex = /(?:\/|\[\s*)(?:[a-z])(?:\/|\s*\])/i;
+      const parts = promptText.split(regex);
+      const leadIn = parts[0]?.trim();
+      const followUp = parts[1]?.trim();
 
-    const voices = window.speechSynthesis.getVoices();
-    const preferredVoice = voices.find((v) => v.lang.includes("en-ZA") || v.lang.includes("en-GB"));
-    if (preferredVoice) {
-      utterance.voice = preferredVoice;
+      if (leadIn) {
+        await this.speakUtterance(leadIn, lang);
+        await new Promise((r) => setTimeout(r, 120));
+      }
+
+      // Play the authentic recorded letter sound (e.g. t.mp3)
+      await this.playRecordedPhoneme(singleLetter);
+      await new Promise((r) => setTimeout(r, 250));
+
+      if (followUp) {
+        await this.speakUtterance(followUp, lang);
+      }
+      return;
     }
 
-    utterance.onend = () => {
-      setTimeout(() => {
-        if (phonemes.length > 1) {
-          // Play the multiple phonemes in sequence (e.g. s -> a -> t)
-          this.playPhonemeSequence(phonemes);
-        } else {
-          // Only play letter audio IF a target letter or phoneme was explicitly in the question!
-          // NEVER fall back to 's' or play unexpected sounds
-          const letter = targetLetter || (phonemes.length === 1 ? phonemes[0] : undefined);
-          if (letter) {
-            this.playRecordedPhoneme(letter);
-          }
-        }
-      }, 180);
-    };
-
-    window.speechSynthesis.speak(utterance);
+    // 3. General descriptive text with no phonemes (e.g. "Step 1: Letter Sounds & Blending Basics")
+    await this.speakUtterance(promptText, lang);
   }
 
   // Play authentic recorded letter sound file from Sound City Reading

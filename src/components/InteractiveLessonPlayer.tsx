@@ -254,9 +254,9 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
                 onClick={() => {
                   const correctOption = currentActivity.options?.find((o) => o.isCorrect);
                   const targetLetter =
-                    currentActivity.tracingTarget ||
-                    correctOption?.label ||
                     currentActivity.audioPrompt ||
+                    (correctOption && correctOption.label.length === 1 ? correctOption.label : undefined) ||
+                    currentActivity.tracingTarget ||
                     "s";
                   soundFx.speakPhoneme(
                     targetLetter,

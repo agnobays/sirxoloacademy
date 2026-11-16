@@ -11,12 +11,17 @@ import {
   ArrowRight,
   Award,
   Zap,
+  Target,
+  X,
+  Volume2,
+  ShieldCheck,
 } from "lucide-react";
 import { SUBJECTS, SKILL_STEPS } from "@/data/curriculumData";
 import { SubjectId } from "@/types/curriculum";
 
 export default function LearnPage() {
   const [selectedSubject, setSelectedSubject] = useState<SubjectId>("english");
+  const [showDiagnosticModal, setShowDiagnosticModal] = useState(false);
 
   const subjectMeta = SUBJECTS[selectedSubject];
   const subjectSteps = SKILL_STEPS.filter((s) => s.subjectId === selectedSubject);
@@ -44,10 +49,11 @@ export default function LearnPage() {
             New to Sir Xolo Academy?
           </span>
           <button
-            onClick={() => alert("Diagnostic Assessment: 5 quick visual questions will assess your starting step so you never repeat what you already know, and never skip what you need!")}
-            className="w-full px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-black text-xs uppercase tracking-wider transition-all cursor-pointer shadow-md"
+            onClick={() => setShowDiagnosticModal(true)}
+            className="w-full px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-black text-xs uppercase tracking-wider transition-all cursor-pointer shadow-md flex items-center justify-center gap-1.5"
           >
-            Take Skill Diagnostic
+            <Target className="w-4 h-4 text-slate-950" />
+            <span>Take Skill Diagnostic</span>
           </button>
         </div>
       </div>
@@ -181,6 +187,124 @@ export default function LearnPage() {
           })}
         </div>
       </div>
+
+      {/* Interactive Mobile-Friendly Diagnostic Assessment Modal */}
+      {showDiagnosticModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-lg bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+            {/* Close Button */}
+            <button
+              onClick={() => setShowDiagnosticModal(false)}
+              className="absolute top-4 right-4 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors cursor-pointer"
+              aria-label="Close modal"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Modal Header */}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center font-black shrink-0 shadow-md">
+                <Target className="w-6 h-6" />
+              </div>
+              <div>
+                <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full">
+                  Adaptive Skill Diagnostic
+                </span>
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                  Find Your Starting Step 🎯
+                </h3>
+              </div>
+            </div>
+
+            <p className="text-xs sm:text-sm text-slate-600 mb-6 leading-relaxed">
+              At Sir Xolo Academy, we don&apos;t lock learners by rigid Grade 1, 2, or 3 labels. Each child takes 5 quick visual challenges to discover their starting rung on the ladder!
+            </p>
+
+            {/* 3 Core Benefits */}
+            <div className="space-y-3 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <p className="text-xs text-slate-700">
+                  <strong className="text-slate-900">Never Repeat:</strong> If your child already knows their letter sounds, they jump straight to word blending.
+                </p>
+              </div>
+
+              <div className="flex items-start gap-2.5">
+                <ShieldCheck className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+                <p className="text-xs text-slate-700">
+                  <strong className="text-slate-900">Never Skip:</strong> Pinpoints foundational phonetic or math hurdles before moving forward.
+                </p>
+              </div>
+
+              <div className="flex items-start gap-2.5">
+                <Sparkles className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                <p className="text-xs text-slate-700">
+                  <strong className="text-slate-900">60-Second Assessment:</strong> Fast, visual, tactile puzzles designed for young children.
+                </p>
+              </div>
+            </div>
+
+            {/* Choose Diagnostic Track */}
+            <div className="space-y-2.5">
+              <span className="text-[11px] font-black uppercase text-slate-500 tracking-wider block">
+                Choose a Free Placement Diagnostic:
+              </span>
+
+              <Link
+                href="/learn/english/eng-step-1"
+                onClick={() => setShowDiagnosticModal(false)}
+                className="w-full p-3.5 rounded-2xl bg-indigo-50 hover:bg-indigo-100 border-2 border-indigo-200 text-indigo-950 font-black text-xs sm:text-sm flex items-center justify-between transition-all group"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xl">🔤</span>
+                  <div className="text-left">
+                    <span className="block font-black">English Diagnostic</span>
+                    <span className="text-[10px] text-indigo-600 font-semibold block">Sounds /s/, /a/, /t/, /p/ & Blending</span>
+                  </div>
+                </div>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-indigo-600" />
+              </Link>
+
+              <Link
+                href="/learn/mathematics/math-step-1"
+                onClick={() => setShowDiagnosticModal(false)}
+                className="w-full p-3.5 rounded-2xl bg-amber-50 hover:bg-amber-100 border-2 border-amber-200 text-amber-950 font-black text-xs sm:text-sm flex items-center justify-between transition-all group"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xl">🔢</span>
+                  <div className="text-left">
+                    <span className="block font-black">Mathematics Diagnostic</span>
+                    <span className="text-[10px] text-amber-700 font-semibold block">Subitizing, Ten-Frames & Number Bonds</span>
+                  </div>
+                </div>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-amber-700" />
+              </Link>
+
+              <Link
+                href="/learn/isizulu/zulu-step-1"
+                onClick={() => setShowDiagnosticModal(false)}
+                className="w-full p-3.5 rounded-2xl bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-200 text-emerald-950 font-black text-xs sm:text-sm flex items-center justify-between transition-all group"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xl">🇿🇦</span>
+                  <div className="text-left">
+                    <span className="block font-black">isiZulu Ulwimi Diagnostic</span>
+                    <span className="text-[10px] text-emerald-700 font-semibold block">Onkamisa A-E-I-O-U & Syllable Sounds</span>
+                  </div>
+                </div>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-emerald-700" />
+              </Link>
+            </div>
+
+            <button
+              onClick={() => setShowDiagnosticModal(false)}
+              className="mt-5 w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs uppercase tracking-wider transition-all"
+            >
+              Close & Explore Skill Ladders
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
