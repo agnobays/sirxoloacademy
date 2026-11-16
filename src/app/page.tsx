@@ -33,164 +33,80 @@ export default function Home() {
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-200/40 rounded-full blur-3xl pointer-events-none -z-10" />
         <div className="absolute top-20 right-10 w-96 h-96 bg-amber-200/30 rounded-full blur-3xl pointer-events-none -z-10" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-            {/* Left Column: Hero Content */}
-            <div className="lg:col-span-7 space-y-6 sm:space-y-8 text-center lg:text-left">
-              {/* Category Pill */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950 shadow-sm text-xs sm:text-sm font-black uppercase tracking-wider">
-                <span className="flex h-2 w-2 rounded-full bg-slate-950 animate-ping" />
-                <span>📢 Official Announcement • Launching 2026/2027</span>
-              </div>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="space-y-6 sm:space-y-8">
+            {/* Announcement Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950 shadow-sm text-xs sm:text-sm font-black uppercase tracking-wider">
+              <span className="flex h-2 w-2 rounded-full bg-slate-950 animate-ping" />
+              <span>📢 Official Announcement • Launching 2026/2027</span>
+            </div>
 
-              {/* High-Impact Headline */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-950 tracking-tight leading-[1.12]">
-                Where Young Minds Master{" "}
-                <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-amber-500 bg-clip-text text-transparent">
-                  English, Math & isiZulu
-                </span>
-              </h1>
+            {/* High-Impact Headline */}
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-950 tracking-tight leading-[1.12]">
+              Where Young Minds Master{" "}
+              <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-amber-500 bg-clip-text text-transparent">
+                English, Math & isiZulu
+              </span>
+            </h1>
 
-              {/* Sub-headline strictly adhering to spec */}
-              <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-medium max-w-2xl mx-auto lg:mx-0">
-                South Africa’s premier interactive, self-paced learning platform. No rigid Grade 1/2/3 labels.
-                Children progress through <strong className="text-slate-900 font-bold">continuous step-by-step skill ladders</strong> with bite-sized videos by Sir Xolo, authentic audio pronunciations, and auto-marked tactile quizzes.
-              </p>
+            {/* Sub-headline strictly adhering to spec */}
+            <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-medium max-w-2xl mx-auto">
+              South Africa’s premier interactive, self-paced learning platform. No rigid Grade 1/2/3 labels.
+              Children progress through <strong className="text-slate-900 font-bold">continuous step-by-step skill ladders</strong> with bite-sized videos by Sir Xolo, authentic audio pronunciations, and auto-marked tactile quizzes.
+            </p>
 
-              {/* App Store & Play Store Announcement Badges */}
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-1">
-                <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-md">
-                  <Smartphone className="w-4 h-4 text-emerald-400" />
-                  <div className="text-left">
-                    <span className="text-[10px] text-slate-400 block leading-none">Coming Soon to</span>
-                    <span className="font-black">Google Play (APK)</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-md">
-                  <Layers className="w-4 h-4 text-indigo-400" />
-                  <div className="text-left">
-                    <span className="text-[10px] text-slate-400 block leading-none">Coming Soon to</span>
-                    <span className="font-black">Apple App Store (iOS)</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold">
-                  <Sparkles className="w-4 h-4 text-amber-600" />
-                  <span>Academy Kiosk Tablets</span>
+            {/* App Store & Play Store Announcement Badges */}
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-md">
+                <Smartphone className="w-4 h-4 text-emerald-400" />
+                <div className="text-left">
+                  <span className="text-[10px] text-slate-400 block leading-none">Coming Soon to</span>
+                  <span className="font-black">Google Play (APK)</span>
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
-                <a
-                  href="#register"
-                  className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-black text-sm uppercase tracking-wider shadow-lg shadow-indigo-600/25 transition-all flex items-center justify-center gap-2"
-                >
-                  <span>Pre-Register for Early Access</span>
-                  <ArrowRight className="w-4 h-4" />
-                </a>
-
-                <a
-                  href="#curriculum"
-                  className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-white hover:bg-slate-100 active:scale-95 text-slate-800 font-bold text-sm border border-slate-200 shadow-xs transition-all flex items-center justify-center gap-2"
-                >
-                  <BookOpen className="w-4 h-4 text-indigo-600" />
-                  <span>Explore 3-Subject Ladder</span>
-                </a>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-md">
+                <Layers className="w-4 h-4 text-indigo-400" />
+                <div className="text-left">
+                  <span className="text-[10px] text-slate-400 block leading-none">Coming Soon to</span>
+                  <span className="font-black">Apple App Store (iOS)</span>
+                </div>
               </div>
 
-              {/* Genuine Platform Focus Badge */}
-              <div className="pt-4 border-t border-slate-200/70 flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs font-bold text-slate-600">
-                <div className="flex items-center gap-1.5 text-indigo-700 bg-indigo-50/80 px-3 py-1.5 rounded-full border border-indigo-100">
-                  <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0" />
-                  <span>Official Pre-Registration Now Open</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50/80 px-3 py-1.5 rounded-full border border-emerald-100">
-                  <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Foundation Phase (Ages 4–9)</span>
-                </div>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold">
+                <Sparkles className="w-4 h-4 text-amber-600" />
+                <span>Academy Kiosk Tablets</span>
               </div>
             </div>
 
-            {/* Right Column: Dribbble-Style Interactive LMS Showcase Card */}
-            <div className="lg:col-span-5 relative">
-              {/* Main LMS Lesson Preview Card */}
-              <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-2xl shadow-slate-200/70 relative z-10">
-                {/* Lesson Header */}
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md font-black">
-                      <GraduationCap className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-black text-slate-900">Sir Xolo Video Lesson</h4>
-                      <p className="text-xs text-indigo-600 font-bold">English Phonics • Step 3</p>
-                    </div>
-                  </div>
-                  <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-black border border-emerald-200 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
-                    Live Step
-                  </span>
-                </div>
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+              <a
+                href="#register"
+                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-black text-sm uppercase tracking-wider shadow-lg shadow-indigo-600/25 transition-all flex items-center justify-center gap-2"
+              >
+                <span>Pre-Register for Early Access</span>
+                <ArrowRight className="w-4 h-4" />
+              </a>
 
-                {/* Video Lesson Mock Screen */}
-                <div className="relative rounded-2xl overflow-hidden bg-gradient-to-tr from-slate-900 to-indigo-950 aspect-video flex flex-col items-center justify-center text-white p-4 shadow-inner group">
-                  <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center group-hover:scale-110 transition-transform cursor-pointer border border-white/30 shadow-lg">
-                    <Play className="w-6 h-6 text-white fill-white ml-0.5" />
-                  </div>
-                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-[11px] font-bold text-white/90 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-xl">
-                    <span>Sound Blending: /s/ - /u/ - /n/</span>
-                    <span className="text-amber-400">4:30 min</span>
-                  </div>
-                </div>
+              <a
+                href="#curriculum"
+                className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-white hover:bg-slate-100 active:scale-95 text-slate-800 font-bold text-sm border border-slate-200 shadow-xs transition-all flex items-center justify-center gap-2"
+              >
+                <BookOpen className="w-4 h-4 text-indigo-600" />
+                <span>Explore 3-Subject Ladder</span>
+              </a>
+            </div>
 
-                {/* Interactive Audio Pronunciation Snippet */}
-                <div className="mt-5 p-4 rounded-2xl bg-amber-50/80 border border-amber-200/70 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-amber-400 text-amber-950 flex items-center justify-center font-black shadow-xs">
-                      /s/
-                    </div>
-                    <div>
-                      <p className="text-xs font-black text-slate-900">Audio Ear Training</p>
-                      <p className="text-[11px] text-slate-600">English: Sun • isiZulu: Ilanga</p>
-                    </div>
-                  </div>
-                  <AudioButton textToSpeak="s. Sun. Ilanga." label="Test Audio" size="sm" />
-                </div>
-
-                {/* Step Ladder Mini Progress */}
-                <div className="mt-4 pt-4 border-t border-slate-100">
-                  <div className="flex items-center justify-between text-xs font-bold text-slate-600 mb-2">
-                    <span>Mastery Ladder Progress</span>
-                    <span className="text-indigo-600 font-black">Step 3 of 5 Mastered</span>
-                  </div>
-                  <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 w-3/5 rounded-full" />
-                  </div>
-                </div>
+            {/* Genuine Platform Focus Badge */}
+            <div className="pt-4 border-t border-slate-200/70 flex flex-wrap items-center justify-center gap-4 text-xs font-bold text-slate-600">
+              <div className="flex items-center gap-1.5 text-indigo-700 bg-indigo-50/80 px-3 py-1.5 rounded-full border border-indigo-100">
+                <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0" />
+                <span>Official Pre-Registration Now Open</span>
               </div>
-
-              {/* Floating Bento Chip 1: Achievement Badge (Top-Right) */}
-              <div className="hidden sm:flex absolute -top-5 -right-5 z-20 items-center gap-3 bg-white px-4 py-3 rounded-2xl border border-slate-200 shadow-xl animate-bounce-subtle">
-                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-black">
-                  <Trophy className="w-5 h-5 text-amber-500" />
-                </div>
-                <div>
-                  <p className="text-xs font-black text-slate-900">Milestone Mastered!</p>
-                  <p className="text-[11px] text-emerald-600 font-bold">+50 Stars Earned ⭐</p>
-                </div>
-              </div>
-
-              {/* Floating Bento Chip 2: Diagnostic Baseline (Bottom-Left) */}
-              <div className="hidden sm:flex absolute -bottom-6 -left-6 z-20 items-center gap-3 bg-white px-4 py-3 rounded-2xl border border-slate-200 shadow-xl">
-                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-black">
-                  <CheckCircle2 className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-xs font-black text-slate-900">Zero-Stress Diagnostic</p>
-                  <p className="text-[11px] text-slate-500 font-medium">Starts at exact skill readiness</p>
-                </div>
+              <div className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50/80 px-3 py-1.5 rounded-full border border-emerald-100">
+                <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Foundation Phase (Ages 4–9)</span>
               </div>
             </div>
           </div>

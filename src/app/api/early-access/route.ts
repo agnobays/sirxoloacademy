@@ -98,6 +98,44 @@ export async function POST(req: Request) {
 
     saveLocalBackup(record);
 
+    // 3. Send email notification to preapplicattion@sirxoloacademy.co.za
+    try {
+      const nodemailer = await import("nodemailer");
+      const transporter = nodemailer.createTransport({
+        host: "mail.sirxoloacademy.co.za",
+        port: 587,
+        secure: false,
+        auth: {
+          user: "preapplicattion@sirxoloacademy.co.za",
+          pass: "HgTvABMZrV8jL42JLKPy",
+        },
+        tls: { rejectUnauthorized: false },
+      });
+
+      const subsList = Array.isArray(subjects) ? subjects.join(", ") : "All 3 Subjects";
+      await transporter.sendMail({
+        from: '"Sir Xolo Academy" <preapplicattion@sirxoloacademy.co.za>',
+        to: "preapplicattion@sirxoloacademy.co.za",
+        subject: `New Pre-Registration: ${parentName} (Learner: ${childName || "Child"})`,
+        text: `NEW PRE-REGISTRATION RECEIVED
+
+Parent: ${parentName}
+Email: ${email}
+Phone/WhatsApp: ${phone}
+
+Learner: ${childName || "Not specified"}
+Age: ${childAge || "Not specified"}
+Subjects: ${subsList}
+Workbook Interest: ${workbookInterest ? "YES" : "No"}
+Notes: ${notes || "None"}
+
+Date: ${new Date().toLocaleString("en-ZA")}
+Registration ID: ${recordId}`,
+      });
+    } catch (mailErr) {
+      console.warn("Email alert notice:", mailErr);
+    }
+
     return NextResponse.json({
       success: true,
       message: "Thank you for registering! We have secured your spot for early access.",
@@ -115,7 +153,6 @@ export async function POST(req: Request) {
 
 export async function GET() {
   try {
-    // Try reading from MySQL first
     try {
       await initDatabase();
       const pool = getDbPool();
@@ -126,7 +163,6 @@ export async function GET() {
         data: rows,
       });
     } catch (mysqlErr) {
-      // Fallback to local file store
       ensureDataFile();
       const fileContent = fs.readFileSync(filePath, "utf-8");
       const records: RegistrationRecord[] = JSON.parse(fileContent);
