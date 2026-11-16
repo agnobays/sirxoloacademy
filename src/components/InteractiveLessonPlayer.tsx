@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { SkillStep, SubjectMeta } from "@/types/curriculum";
 import AudioButton from "./AudioButton";
-import TouchTracingCanvas from "./TouchTracingCanvas";
+import VectorRailTracing from "./VectorRailTracing";
 import TenFrameCounter from "./TenFrameCounter";
 import { soundFx } from "@/utils/audioHelper";
 
@@ -255,10 +255,9 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
           {/* Interactive Options or Specialized Widgets */}
           {currentActivity.type === "tracing" ? (
             <div className="my-6">
-              <TouchTracingCanvas
+              <VectorRailTracing
                 character={currentActivity.tracingTarget || "s"}
                 guideHint={currentActivity.subPrompt}
-                soundPrompt={currentActivity.audioPrompt}
                 onComplete={() => {
                   setActivityFeedback({
                     isSuccess: true,
