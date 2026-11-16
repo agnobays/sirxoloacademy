@@ -5,15 +5,12 @@ import {
   Mic,
   Square,
   Play,
-  RotateCcw,
-  CheckCircle2,
   Volume2,
   Sparkles,
-  ShieldCheck,
   Radio,
-  UploadCloud,
-  Check,
+  Upload,
   AlertCircle,
+  CheckCircle2,
 } from "lucide-react";
 import { VoiceConfig, updateLocalVoiceConfig } from "@/utils/voiceRegistry";
 
@@ -93,8 +90,10 @@ export default function VoiceStudioManager() {
   const [loading, setLoading] = useState(true);
   const [recordingKey, setRecordingKey] = useState<string | null>(null);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const [micLevel, setMicLevel] = useState(0);
   const [activeTab, setActiveTab] = useState<"isizulu" | "feedback">("isizulu");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [playbackError, setPlaybackError] = useState<string | null>(null);
   const [previewPlayingKey, setPreviewPlayingKey] = useState<string | null>(null);
 
   // Audio recording refs
@@ -102,6 +101,9 @@ export default function VoiceStudioManager() {
   const audioChunksRef = useRef<Blob[]>([]);
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const animFrameRef = useRef<number | null>(null);
+  const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
 
   // Load configuration from API
   useEffect(() => {
@@ -124,33 +126,66 @@ export default function VoiceStudioManager() {
     }
   };
 
-  // Start recording from device microphone
+  // Start recording from device microphone with real-time level visualizer
   const startRecording = async (soundKey: string) => {
     try {
       if (currentAudioRef.current) {
         currentAudioRef.current.pause();
       }
+      setPlaybackError(null);
 
-      // Explicitly request microphone stream
+      // Standard audio options with auto gain control enabled for clear speech capture
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
-          echoCancellation: false,
-          noiseSuppression: false,
+          echoCancellation: true,
+          noiseSuppression: true,
           autoGainControl: true,
         },
       });
 
+      // Initialize Web Audio API Analyser for live volume metering
+      try {
+        const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        if (AudioCtx) {
+          const audioCtx = new AudioCtx();
+          audioContextRef.current = audioCtx;
+          const sourceNode = audioCtx.createMediaStreamSource(stream);
+          const analyser = audioCtx.createAnalyser();
+          analyser.fftSize = 256;
+          sourceNode.connect(analyser);
+
+          const bufferLength = analyser.frequencyBinCount;
+          const dataArray = new Uint8Array(bufferLength);
+
+          const updateVolumeMeter = () => {
+            if (!analyser) return;
+            analyser.getByteFrequencyData(dataArray);
+            let sum = 0;
+            for (let i = 0; i < bufferLength; i++) {
+              sum += dataArray[i];
+            }
+            const avg = sum / bufferLength;
+            const normalized = Math.min(100, Math.round((avg / 128) * 100));
+            setMicLevel(normalized);
+            animFrameRef.current = requestAnimationFrame(updateVolumeMeter);
+          };
+          updateVolumeMeter();
+        }
+      } catch (audioCtxErr) {
+        console.warn("AudioContext visualizer not supported:", audioCtxErr);
+      }
+
       audioChunksRef.current = [];
 
-      // Determine best audio mime type supported by this browser/phone
+      // Determine best audio mime type supported
       let mimeType = "";
       if (typeof MediaRecorder !== "undefined") {
         if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
           mimeType = "audio/webm;codecs=opus";
-        } else if (MediaRecorder.isTypeSupported("audio/webm")) {
-          mimeType = "audio/webm";
         } else if (MediaRecorder.isTypeSupported("audio/mp4")) {
           mimeType = "audio/mp4";
+        } else if (MediaRecorder.isTypeSupported("audio/webm")) {
+          mimeType = "audio/webm";
         }
       }
 
@@ -168,7 +203,19 @@ export default function VoiceStudioManager() {
           type: mediaRecorder.mimeType || "audio/webm",
         });
 
-        // Immediately create a local Object URL for instant zero-latency playback
+        // Clean up visualizer & stream
+        if (animFrameRef.current) {
+          cancelAnimationFrame(animFrameRef.current);
+          animFrameRef.current = null;
+        }
+        if (audioContextRef.current) {
+          audioContextRef.current.close().catch(() => {});
+          audioContextRef.current = null;
+        }
+        setMicLevel(0);
+        stream.getTracks().forEach((track) => track.stop());
+
+        // Immediately create a local Object URL for instant playback
         const localBlobUrl = URL.createObjectURL(recordedBlob);
         setConfig((prev) => ({
           ...prev,
@@ -176,7 +223,6 @@ export default function VoiceStudioManager() {
         }));
 
         await uploadRecording(soundKey, recordedBlob);
-        stream.getTracks().forEach((track) => track.stop());
       };
 
       mediaRecorderRef.current = mediaRecorder;
@@ -210,7 +256,7 @@ export default function VoiceStudioManager() {
   // Upload recorded audio file to server
   const uploadRecording = async (soundKey: string, blob: Blob) => {
     try {
-      setStatusMessage(`Saving Mr. Xolo's voice for ${soundKey.toUpperCase()}...`);
+      setStatusMessage(`Converting & saving Mr. Xolo's voice for ${soundKey.toUpperCase()}...`);
       const formData = new FormData();
       formData.append("soundKey", soundKey);
       formData.append("audio", blob, `xolo_${soundKey}.webm`);
@@ -222,7 +268,6 @@ export default function VoiceStudioManager() {
 
       if (res.ok) {
         const data = await res.json();
-        // Update local state
         setConfig((prev) => {
           const updated = {
             ...prev,
@@ -234,16 +279,51 @@ export default function VoiceStudioManager() {
         });
         setStatusMessage(`Successfully saved & published Mr. Xolo's voice for ${soundKey.toUpperCase()}! ⭐`);
         setTimeout(() => setStatusMessage(null), 4000);
+      } else {
+        setStatusMessage("Save error: Could not save recording.");
       }
     } catch {
       setStatusMessage("Upload failed. Please check network connection.");
     }
   };
 
+  // Upload external audio file directly (e.g. from WhatsApp, Voice Memos, or laptop)
+  const handleFileUpload = async (soundKey: string, file: File) => {
+    try {
+      setStatusMessage(`Uploading & normalizing voice file for ${soundKey.toUpperCase()}...`);
+      const formData = new FormData();
+      formData.append("soundKey", soundKey);
+      formData.append("audio", file, file.name);
+
+      const res = await fetch("/api/voice-studio", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setConfig((prev) => {
+          const updated = {
+            ...prev,
+            activeSources: { ...prev.activeSources, [soundKey]: "xolo" },
+            customRecordings: { ...prev.customRecordings, [soundKey]: data.url },
+          };
+          updateLocalVoiceConfig(updated);
+          return updated;
+        });
+        setStatusMessage(`Successfully uploaded & published ${soundKey.toUpperCase()}! ⭐`);
+        setTimeout(() => setStatusMessage(null), 4000);
+      } else {
+        setStatusMessage("Upload failed. Please check file format and try again.");
+      }
+    } catch {
+      setStatusMessage("Upload error. Please try again.");
+    }
+  };
+
   // Toggle published voice source between Default and Mr. Xolo
   const handleToggleSource = async (soundKey: string, source: "default" | "xolo") => {
     try {
-      // Optimistic update
       setConfig((prev) => {
         const updated = {
           ...prev,
@@ -272,19 +352,31 @@ export default function VoiceStudioManager() {
     }
   };
 
-  // Play audio preview
-  const playAudio = (url: string, key: string) => {
+  // Play audio preview with error handling
+  const playAudio = async (url: string, key: string) => {
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
+      currentAudioRef.current = null;
     }
-    const audio = new Audio(url);
-    currentAudioRef.current = audio;
+    setPlaybackError(null);
     setPreviewPlayingKey(key);
 
-    audio.onended = () => setPreviewPlayingKey(null);
-    audio.onerror = () => setPreviewPlayingKey(null);
+    try {
+      const audio = new Audio(url);
+      currentAudioRef.current = audio;
 
-    audio.play().catch(() => setPreviewPlayingKey(null));
+      audio.onended = () => setPreviewPlayingKey(null);
+      audio.onerror = () => {
+        setPreviewPlayingKey(null);
+        setPlaybackError(`Audio playback issue for ${key.toUpperCase()}. Tap the audio player directly or re-record.`);
+      };
+
+      await audio.play();
+    } catch (playErr) {
+      console.warn("Playback prevented or failed:", playErr);
+      setPreviewPlayingKey(null);
+      setPlaybackError("Tap the audio player directly to listen.");
+    }
   };
 
   const filteredItems = VOICE_ITEMS.filter((item) => item.category === activeTab);
@@ -305,7 +397,7 @@ export default function VoiceStudioManager() {
             </span>
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl leading-relaxed">
-            Record each sound directly using your phone or laptop microphone. You can test your recording and switch between <strong>Mr. Xolo&apos;s Voice</strong> and the <strong>Default Audio</strong> at any time with a single click!
+            Record each sound directly using your phone or laptop microphone, or upload a clean voice note from your phone. You can test your recording and switch between <strong>Mr. Xolo&apos;s Voice</strong> and the <strong>Default Audio</strong> at any time!
           </p>
         </div>
 
@@ -342,6 +434,14 @@ export default function VoiceStudioManager() {
         </div>
       )}
 
+      {/* Playback Error Alert */}
+      {playbackError && (
+        <div className="mb-6 p-4 rounded-2xl bg-amber-50 border-2 border-amber-300 text-amber-950 font-bold text-xs sm:text-sm flex items-center gap-2.5 animate-fade-in shadow-xs">
+          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+          <span>{playbackError}</span>
+        </div>
+      )}
+
       {/* Voice Items Grid */}
       <div className="space-y-4">
         {filteredItems.map((item) => {
@@ -361,7 +461,7 @@ export default function VoiceStudioManager() {
             >
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 {/* Left Info */}
-                <div className="space-y-1">
+                <div className="space-y-1.5 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xl sm:text-2xl font-black text-slate-900">{item.name}</span>
                     <span
@@ -378,6 +478,56 @@ export default function VoiceStudioManager() {
                   <p className="text-xs text-indigo-900 bg-white/80 border border-indigo-100 px-3 py-1.5 rounded-xl font-bold inline-block">
                     🎙️ <span className="text-slate-500 font-normal">Script to say:</span> &ldquo;{item.sampleScript}&rdquo;
                   </p>
+
+                  {/* Visual Live Volume Meter while recording */}
+                  {isRecordingThis && (
+                    <div className="mt-3 p-3 bg-slate-900 rounded-2xl border border-slate-800 text-white space-y-2">
+                      <div className="flex items-center justify-between text-xs font-bold">
+                        <span className="flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
+                          <span>Live Recording: {recordingSeconds}s</span>
+                        </span>
+                        <span className={micLevel > 5 ? "text-emerald-400" : "text-amber-400 font-semibold"}>
+                          {micLevel > 5 ? "🎙️ Voice Detected!" : "⚠️ Silence / Mic Muted?"}
+                        </span>
+                      </div>
+
+                      {/* VU Meter Bar */}
+                      <div className="w-full bg-slate-800 h-3 rounded-full overflow-hidden p-0.5 flex">
+                        <div
+                          className={`h-full rounded-full transition-all duration-75 ${
+                            micLevel > 40
+                              ? "bg-emerald-400"
+                              : micLevel > 5
+                              ? "bg-teal-400"
+                              : "bg-slate-600"
+                          }`}
+                          style={{ width: `${Math.max(5, micLevel)}%` }}
+                        />
+                      </div>
+                      {recordingSeconds > 2 && micLevel <= 4 && (
+                        <p className="text-[11px] text-amber-300">
+                          Tip: We are not detecting audio from your microphone. Make sure your browser microphone is unmuted and speak clearly!
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Native Mini Audio Player for 100% reliable preview */}
+                  {hasCustomRecording && !isRecordingThis && (
+                    <div className="mt-2.5 flex items-center gap-2.5 flex-wrap">
+                      <span className="text-[11px] font-bold text-purple-900 bg-purple-100 px-2 py-0.5 rounded-md">
+                        Mr. Xolo Voice Track:
+                      </span>
+                      <audio
+                        controls
+                        controlsList="nodownload"
+                        preload="metadata"
+                        src={config.customRecordings[item.key]}
+                        className="h-8 w-56 rounded-lg"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* Right Controls */}
@@ -391,7 +541,7 @@ export default function VoiceStudioManager() {
                       className="px-4 py-2.5 rounded-2xl bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 shadow-sm disabled:opacity-40 cursor-pointer"
                     >
                       <Mic className="w-4 h-4" />
-                      <span>{hasCustomRecording ? "Re-Record Voice" : "Record Voice"}</span>
+                      <span>{hasCustomRecording ? "Re-Record Mic" : "Record Mic"}</span>
                     </button>
                   ) : (
                     <button
@@ -404,8 +554,39 @@ export default function VoiceStudioManager() {
                     </button>
                   )}
 
-                  {/* Play Mr. Xolo's Recording */}
-                  {hasCustomRecording && (
+                  {/* Upload Audio File Alternative (Phone Voice Memo / WhatsApp voice note) */}
+                  {!isRecordingThis && (
+                    <>
+                      <input
+                        type="file"
+                        accept="audio/*,.mp3,.m4a,.wav,.ogg,.aac,.webm"
+                        className="hidden"
+                        ref={(el) => {
+                          fileInputRefs.current[item.key] = el;
+                        }}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            handleFileUpload(item.key, file);
+                            e.target.value = "";
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRefs.current[item.key]?.click()}
+                        disabled={recordingKey !== null}
+                        className="px-3.5 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-40"
+                        title="Upload a voice memo or audio file from your device"
+                      >
+                        <Upload className="w-3.5 h-3.5 text-slate-500" />
+                        <span>Upload File</span>
+                      </button>
+                    </>
+                  )}
+
+                  {/* Play Mr. Xolo's Recording Button */}
+                  {hasCustomRecording && !isRecordingThis && (
                     <button
                       type="button"
                       onClick={() => playAudio(config.customRecordings[item.key], item.key)}
@@ -421,7 +602,7 @@ export default function VoiceStudioManager() {
                   )}
 
                   {/* Play Default Audio */}
-                  {item.defaultAudioUrl && (
+                  {item.defaultAudioUrl && !isRecordingThis && (
                     <button
                       type="button"
                       onClick={() => playAudio(item.defaultAudioUrl, `default-${item.key}`)}
@@ -433,35 +614,37 @@ export default function VoiceStudioManager() {
                   )}
 
                   {/* Publish Switch Toggle */}
-                  <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-2xl border border-slate-200">
-                    <button
-                      type="button"
-                      onClick={() => handleToggleSource(item.key, "default")}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
-                        currentSource === "default"
-                          ? "bg-white text-slate-900 shadow-xs"
-                          : "text-slate-500 hover:text-slate-900"
-                      }`}
-                    >
-                      Default
-                    </button>
+                  {!isRecordingThis && (
+                    <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-2xl border border-slate-200">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleSource(item.key, "default")}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                          currentSource === "default"
+                            ? "bg-white text-slate-900 shadow-xs"
+                            : "text-slate-500 hover:text-slate-900"
+                        }`}
+                      >
+                        Default
+                      </button>
 
-                    <button
-                      type="button"
-                      disabled={!hasCustomRecording}
-                      onClick={() => handleToggleSource(item.key, "xolo")}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
-                        currentSource === "xolo"
-                          ? "bg-purple-600 text-white shadow-xs"
-                          : hasCustomRecording
-                          ? "text-purple-700 hover:bg-purple-100"
-                          : "text-slate-300 cursor-not-allowed"
-                      }`}
-                      title={!hasCustomRecording ? "Record your voice first to publish" : ""}
-                    >
-                      Mr. Xolo Voice
-                    </button>
-                  </div>
+                      <button
+                        type="button"
+                        disabled={!hasCustomRecording}
+                        onClick={() => handleToggleSource(item.key, "xolo")}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                          currentSource === "xolo"
+                            ? "bg-purple-600 text-white shadow-xs"
+                            : hasCustomRecording
+                            ? "text-purple-700 hover:bg-purple-100"
+                            : "text-slate-300 cursor-not-allowed"
+                        }`}
+                        title={!hasCustomRecording ? "Record your voice first to publish" : ""}
+                      >
+                        Mr. Xolo Voice
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
