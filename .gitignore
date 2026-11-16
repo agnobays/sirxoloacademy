@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Voice studio audio recordings & settings (persistent user data)
+/data/*
+/public/audio/voice-studio/*
+!/public/audio/voice-studio/.gitkeep
+
