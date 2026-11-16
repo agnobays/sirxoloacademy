@@ -100,33 +100,15 @@ export default function Home() {
                 </a>
               </div>
 
-              {/* Social Proof & Trust Metrics */}
-              <div className="pt-4 border-t border-slate-200/70 flex flex-wrap items-center justify-center lg:justify-start gap-6">
-                <div className="flex -space-x-2">
-                  <div className="w-10 h-10 rounded-full bg-amber-400 border-2 border-white flex items-center justify-center font-black text-xs text-amber-950 shadow-xs">
-                    TK
-                  </div>
-                  <div className="w-10 h-10 rounded-full bg-indigo-500 border-2 border-white flex items-center justify-center font-black text-xs text-white shadow-xs">
-                    SM
-                  </div>
-                  <div className="w-10 h-10 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center font-black text-xs text-white shadow-xs">
-                    ZN
-                  </div>
-                  <div className="w-10 h-10 rounded-full bg-purple-500 border-2 border-white flex items-center justify-center font-black text-xs text-white shadow-xs">
-                    LM
-                  </div>
+              {/* Genuine Platform Focus Badge */}
+              <div className="pt-4 border-t border-slate-200/70 flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs font-bold text-slate-600">
+                <div className="flex items-center gap-1.5 text-indigo-700 bg-indigo-50/80 px-3 py-1.5 rounded-full border border-indigo-100">
+                  <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0" />
+                  <span>Official Pre-Registration Now Open</span>
                 </div>
-
-                <div className="text-left text-xs text-slate-600">
-                  <div className="flex items-center gap-1 text-amber-500">
-                    <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                    <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                    <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                    <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                    <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                    <span className="font-black text-slate-900 ml-1">4.9 / 5.0</span>
-                  </div>
-                  <p className="mt-0.5 font-medium">Over 500+ South African parents registered for launch</p>
+                <div className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50/80 px-3 py-1.5 rounded-full border border-emerald-100">
+                  <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Foundation Phase (Ages 4–9)</span>
                 </div>
               </div>
             </div>
