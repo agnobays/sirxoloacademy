@@ -15,8 +15,32 @@ export interface AnalyticsEvent {
   isCorrect?: boolean;
   score?: number;
   chosenOption?: string;
+  studentName?: string;
+  parentName?: string;
   details?: Record<string, unknown>;
   timestamp?: string;
+}
+
+export function getLearnerIdentity(): { studentName: string; parentName: string } {
+  if (typeof window === "undefined") {
+    return { studentName: "Learner", parentName: "" };
+  }
+  const student = localStorage.getItem("xolo_student_name") || "";
+  const parent = localStorage.getItem("xolo_parent_name") || "";
+  return {
+    studentName: student.trim() || "Guest Learner",
+    parentName: parent.trim(),
+  };
+}
+
+export function setLearnerIdentity(studentName: string, parentName?: string) {
+  if (typeof window === "undefined") return;
+  if (studentName) {
+    localStorage.setItem("xolo_student_name", studentName.trim());
+  }
+  if (parentName !== undefined) {
+    localStorage.setItem("xolo_parent_name", parentName.trim());
+  }
 }
 
 function getSessionId(): string {
@@ -32,8 +56,12 @@ function getSessionId(): string {
 export function trackLearningEvent(event: AnalyticsEvent) {
   if (typeof window === "undefined") return;
 
+  const identity = getLearnerIdentity();
+
   const payload = {
     ...event,
+    studentName: event.studentName || identity.studentName,
+    parentName: event.parentName || identity.parentName,
     sessionId: getSessionId(),
     timestamp: event.timestamp || new Date().toISOString(),
   };

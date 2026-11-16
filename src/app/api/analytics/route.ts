@@ -5,7 +5,7 @@ import path from "path";
 const dataDir = path.join(process.cwd(), "data");
 const analyticsFilePath = path.join(dataDir, "learning_analytics.json");
 
-interface StoredEvent {
+export interface StoredEvent {
   id: string;
   eventType: string;
   subject?: string;
@@ -15,218 +15,11 @@ interface StoredEvent {
   isCorrect?: boolean;
   score?: number;
   chosenOption?: string;
+  studentName?: string;
+  parentName?: string;
   details?: Record<string, unknown>;
   sessionId?: string;
   timestamp: string;
-}
-
-// Generate rich initial baseline data so the dashboard charts & stuck point analyses are immediately visible
-function getInitialBaselineEvents(): StoredEvent[] {
-  const now = Date.now();
-  const day = 24 * 60 * 60 * 1000;
-
-  const sampleEvents: StoredEvent[] = [
-    // Mathematics: Subitizing 3 Apples (Smooth)
-    {
-      id: "ev_1",
-      eventType: "activity_attempt",
-      subject: "mathematics",
-      stepId: "math-step-1",
-      targetId: "math-act-1",
-      title: "Subitizing 3 Apples in Basket",
-      isCorrect: true,
-      chosenOption: "3 Apples",
-      sessionId: "sess_cohort_1",
-      timestamp: new Date(now - day * 2.5).toISOString(),
-    },
-    {
-      id: "ev_2",
-      eventType: "activity_attempt",
-      subject: "mathematics",
-      stepId: "math-step-1",
-      targetId: "math-act-1",
-      title: "Subitizing 3 Apples in Basket",
-      isCorrect: true,
-      chosenOption: "3 Apples",
-      sessionId: "sess_cohort_2",
-      timestamp: new Date(now - day * 2.1).toISOString(),
-    },
-    // Mathematics: Ten Frame Counter (HIGH FRICTION / STUCK POINT)
-    {
-      id: "ev_3",
-      eventType: "activity_attempt",
-      subject: "mathematics",
-      stepId: "math-step-1",
-      targetId: "math-act-ten-frame",
-      title: "Ten-Frame: Place 4 Counters",
-      isCorrect: false,
-      chosenOption: "Placed 3 counters",
-      sessionId: "sess_cohort_3",
-      timestamp: new Date(now - day * 1.8).toISOString(),
-    },
-    {
-      id: "ev_4",
-      eventType: "activity_attempt",
-      subject: "mathematics",
-      stepId: "math-step-1",
-      targetId: "math-act-ten-frame",
-      title: "Ten-Frame: Place 4 Counters",
-      isCorrect: false,
-      chosenOption: "Placed 5 counters",
-      sessionId: "sess_cohort_4",
-      timestamp: new Date(now - day * 1.5).toISOString(),
-    },
-    {
-      id: "ev_5",
-      eventType: "activity_attempt",
-      subject: "mathematics",
-      stepId: "math-step-1",
-      targetId: "math-act-ten-frame",
-      title: "Ten-Frame: Place 4 Counters",
-      isCorrect: true,
-      chosenOption: "Placed 4 counters",
-      sessionId: "sess_cohort_5",
-      timestamp: new Date(now - day * 1.2).toISOString(),
-    },
-    // English: Blending /s/ + /a/ + /t/ into SAT (MODERATE FRICTION)
-    {
-      id: "ev_6",
-      eventType: "activity_attempt",
-      subject: "english",
-      stepId: "eng-step-1",
-      targetId: "eng-act-2",
-      title: "Sound Blending: /s/ + /a/ + /t/ = SAT",
-      isCorrect: false,
-      chosenOption: "TAP",
-      sessionId: "sess_cohort_6",
-      timestamp: new Date(now - day * 2.8).toISOString(),
-    },
-    {
-      id: "ev_7",
-      eventType: "activity_attempt",
-      subject: "english",
-      stepId: "eng-step-1",
-      targetId: "eng-act-2",
-      title: "Sound Blending: /s/ + /a/ + /t/ = SAT",
-      isCorrect: true,
-      chosenOption: "SAT",
-      sessionId: "sess_cohort_7",
-      timestamp: new Date(now - day * 2.0).toISOString(),
-    },
-    {
-      id: "ev_8",
-      eventType: "activity_attempt",
-      subject: "english",
-      stepId: "eng-step-1",
-      targetId: "eng-act-2",
-      title: "Sound Blending: /s/ + /a/ + /t/ = SAT",
-      isCorrect: true,
-      chosenOption: "SAT",
-      sessionId: "sess_cohort_8",
-      timestamp: new Date(now - day * 0.9).toISOString(),
-    },
-    // English: Letter S Sound Matching (Smooth)
-    {
-      id: "ev_9",
-      eventType: "activity_attempt",
-      subject: "english",
-      stepId: "eng-step-1",
-      targetId: "eng-act-1",
-      title: "Phoneme Recognition: /s/ sound",
-      isCorrect: true,
-      chosenOption: "s (snake)",
-      sessionId: "sess_cohort_9",
-      timestamp: new Date(now - day * 3.0).toISOString(),
-    },
-    // isiZulu: Onkamisa /a/ Matching (Smooth)
-    {
-      id: "ev_10",
-      eventType: "activity_attempt",
-      subject: "isizulu",
-      stepId: "zulu-step-1",
-      targetId: "zulu-act-1",
-      title: "isiZulu: Inhlamvu /a/ (Amaqanda)",
-      isCorrect: true,
-      chosenOption: "A",
-      sessionId: "sess_cohort_10",
-      timestamp: new Date(now - day * 1.9).toISOString(),
-    },
-    // isiZulu: Tracing 'A' (MODERATE FRICTION on curves)
-    {
-      id: "ev_11",
-      eventType: "activity_attempt",
-      subject: "isizulu",
-      stepId: "zulu-step-1",
-      targetId: "zulu-act-trace-a",
-      title: "isiZulu: Tracing Onkamisa 'A'",
-      isCorrect: false,
-      chosenOption: "Strayed off diagonal rail",
-      sessionId: "sess_cohort_11",
-      timestamp: new Date(now - day * 1.4).toISOString(),
-    },
-    {
-      id: "ev_12",
-      eventType: "activity_attempt",
-      subject: "isizulu",
-      stepId: "zulu-step-1",
-      targetId: "zulu-act-trace-a",
-      title: "isiZulu: Tracing Onkamisa 'A'",
-      isCorrect: true,
-      chosenOption: "Completed trace",
-      sessionId: "sess_cohort_12",
-      timestamp: new Date(now - day * 0.8).toISOString(),
-    },
-    // Quizzes Completed
-    {
-      id: "ev_13",
-      eventType: "quiz_completed",
-      subject: "english",
-      stepId: "eng-step-1",
-      title: "English Step 1 Quiz",
-      score: 100,
-      sessionId: "sess_cohort_13",
-      timestamp: new Date(now - day * 0.5).toISOString(),
-    },
-    {
-      id: "ev_14",
-      eventType: "quiz_completed",
-      subject: "mathematics",
-      stepId: "math-step-1",
-      title: "Math Step 1 Quiz",
-      score: 80,
-      sessionId: "sess_cohort_14",
-      timestamp: new Date(now - day * 0.3).toISOString(),
-    },
-    {
-      id: "ev_15",
-      eventType: "quiz_completed",
-      subject: "isizulu",
-      stepId: "zulu-step-1",
-      title: "isiZulu Step 1 Quiz",
-      score: 100,
-      sessionId: "sess_cohort_15",
-      timestamp: new Date(now - day * 0.1).toISOString(),
-    },
-    // Diagnostic Placements
-    {
-      id: "ev_16",
-      eventType: "diagnostic_completed",
-      title: "Diagnostic Placement Check",
-      details: { grade: "Grade R", recommendedStep: "Step 1" },
-      sessionId: "sess_cohort_16",
-      timestamp: new Date(now - day * 2.2).toISOString(),
-    },
-    {
-      id: "ev_17",
-      eventType: "diagnostic_completed",
-      title: "Diagnostic Placement Check",
-      details: { grade: "Grade 1", recommendedStep: "Step 2" },
-      sessionId: "sess_cohort_17",
-      timestamp: new Date(now - day * 1.1).toISOString(),
-    },
-  ];
-
-  return sampleEvents;
 }
 
 function ensureAnalyticsFile() {
@@ -234,12 +27,12 @@ function ensureAnalyticsFile() {
     fs.mkdirSync(dataDir, { recursive: true });
   }
   if (!fs.existsSync(analyticsFilePath)) {
-    const initialEvents = getInitialBaselineEvents();
-    fs.writeFileSync(analyticsFilePath, JSON.stringify(initialEvents, null, 2), "utf-8");
+    // 100% Pure live data - initialized with an empty array
+    fs.writeFileSync(analyticsFilePath, JSON.stringify([], null, 2), "utf-8");
   }
 }
 
-// POST: Record learning event telemetry
+// POST: Record real-time learning event telemetry with Student & Parent identity
 export async function POST(req: Request) {
   try {
     ensureAnalyticsFile();
@@ -255,6 +48,8 @@ export async function POST(req: Request) {
       isCorrect: typeof body.isCorrect === "boolean" ? body.isCorrect : undefined,
       score: typeof body.score === "number" ? body.score : undefined,
       chosenOption: body.chosenOption ? String(body.chosenOption) : undefined,
+      studentName: body.studentName ? String(body.studentName).trim() : "Guest Learner",
+      parentName: body.parentName ? String(body.parentName).trim() : undefined,
       details: body.details && typeof body.details === "object" ? body.details : undefined,
       sessionId: body.sessionId ? String(body.sessionId) : undefined,
       timestamp: body.timestamp || new Date().toISOString(),
@@ -264,7 +59,7 @@ export async function POST(req: Request) {
     const events: StoredEvent[] = JSON.parse(raw);
     events.unshift(newEvent);
 
-    // Keep last 3,000 events to prevent file bloat while maintaining deep history
+    // Keep last 3,000 real events
     if (events.length > 3000) {
       events.length = 3000;
     }
@@ -278,7 +73,7 @@ export async function POST(req: Request) {
   }
 }
 
-// GET: Aggregate and analyze learning analytics, stuck points, and trends
+// GET: Aggregate and analyze pure live learning data, student friction & stuck points
 export async function GET() {
   try {
     ensureAnalyticsFile();
@@ -287,6 +82,7 @@ export async function GET() {
 
     // 1. Overall KPIs
     const sessions = new Set<string>();
+    const uniqueStudents = new Set<string>();
     let totalAttempts = 0;
     let correctAttempts = 0;
     let totalQuizzes = 0;
@@ -308,7 +104,7 @@ export async function GET() {
       dailyMap[key] = 0;
     }
 
-    // 4. Stuck Points Analysis (Friction by Target Activity / Question)
+    // 4. Stuck Points Analysis with Student-Level Tracking
     interface StuckRecord {
       targetId: string;
       title: string;
@@ -317,7 +113,11 @@ export async function GET() {
       totalAttempts: number;
       correctCount: number;
       failCount: number;
+      accuracy: number;
+      friction: "high" | "moderate" | "low";
       commonMistakes: Record<string, number>;
+      strugglingStudents: string[];
+      successfulStudents: string[];
       recommendation: string;
     }
     const stuckMap: Record<string, StuckRecord> = {};
@@ -332,6 +132,9 @@ export async function GET() {
 
     for (const ev of events) {
       if (ev.sessionId) sessions.add(ev.sessionId);
+      if (ev.studentName && ev.studentName !== "Guest Learner") {
+        uniqueStudents.add(ev.studentName);
+      }
 
       // Subject tracking
       if (ev.subject && subjectCounts[ev.subject] !== undefined) {
@@ -367,19 +170,35 @@ export async function GET() {
             totalAttempts: 0,
             correctCount: 0,
             failCount: 0,
+            accuracy: 100,
+            friction: "low",
             commonMistakes: {},
+            strugglingStudents: [],
+            successfulStudents: [],
             recommendation: "",
           };
         }
 
         const item = stuckMap[targetKey];
         item.totalAttempts++;
+        const studentLabel = ev.studentName
+          ? ev.parentName
+            ? `${ev.studentName} (Parent: ${ev.parentName})`
+            : ev.studentName
+          : "Learner";
+
         if (ev.isCorrect) {
           item.correctCount++;
+          if (!item.successfulStudents.includes(studentLabel)) {
+            item.successfulStudents.push(studentLabel);
+          }
         } else {
           item.failCount++;
           if (ev.chosenOption) {
             item.commonMistakes[ev.chosenOption] = (item.commonMistakes[ev.chosenOption] || 0) + 1;
+          }
+          if (!item.strugglingStudents.includes(studentLabel)) {
+            item.strugglingStudents.push(studentLabel);
           }
         }
       }
@@ -405,17 +224,17 @@ export async function GET() {
         if (accuracy < 70) {
           friction = "high";
           if (item.targetId.includes("ten-frame")) {
-            recommendation = "Children are struggling with ten-frame counting. Recommend adding an extra visual prompt showing the 6 empty boxes.";
+            recommendation = "Learners are struggling with ten-frame placement. Provide a verbal hint reminding them to count empty boxes.";
           } else if (item.targetId.includes("cvc") || item.targetId.includes("blend") || item.targetId === "eng-act-2") {
-            recommendation = "Sound blending is a primary hurdle. Encourage learners to press individual letter tiles slowly before blending.";
+            recommendation = "Sound blending is a primary friction point. Have students tap individual letter sound tiles before blending.";
           } else if (item.targetId.includes("trace")) {
-            recommendation = "Motor control on touch screens is challenging for small fingers. Increase vector rail tolerance.";
+            recommendation = "Fine motor rail control challenges detected. Guide children to slow down their touch strokes.";
           } else {
-            recommendation = "High failure rate detected. Consider offering a spoken teacher hint before the second attempt.";
+            recommendation = "High failure rate detected. Consider offering a spoken hint before the second attempt.";
           }
         } else if (accuracy < 85) {
           friction = "moderate";
-          recommendation = "Moderate friction: Most learners pass on the 2nd attempt after listening to the audio cue.";
+          recommendation = "Moderate friction: Most learners pass on the 2nd attempt after listening to the sound button.";
         }
 
         return {
@@ -425,15 +244,17 @@ export async function GET() {
           recommendation,
         };
       })
-      .sort((a, b) => a.accuracy - b.accuracy); // Lowest accuracy (biggest bottleneck) first!
+      .sort((a, b) => a.accuracy - b.accuracy); // Biggest bottlenecks first
 
     const overallAccuracy = totalAttempts > 0 ? Math.round((correctAttempts / totalAttempts) * 100) : 100;
     const quizPassRate = totalQuizzes > 0 ? Math.round((passedQuizzes / totalQuizzes) * 100) : 100;
 
     return NextResponse.json({
       success: true,
+      isLiveOnly: true,
+      hasLiveEvents: events.length > 0,
       metrics: {
-        totalLearners: sessions.size || 1,
+        totalLearners: uniqueStudents.size || sessions.size || 0,
         totalEvents: events.length,
         totalAttempts,
         overallAccuracy,
@@ -444,7 +265,7 @@ export async function GET() {
       dailyTrend: Object.entries(dailyMap).map(([date, count]) => ({ date, count })),
       stuckPoints,
       diagnosticPlacements,
-      recentFeed: events.slice(0, 15),
+      recentFeed: events.slice(0, 50),
     });
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : "Unknown error";

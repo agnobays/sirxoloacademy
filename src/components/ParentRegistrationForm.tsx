@@ -15,6 +15,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { soundFx } from "@/utils/audioHelper";
+import { setLearnerIdentity } from "@/utils/analytics";
 
 export default function ParentRegistrationForm() {
   const [parentName, setParentName] = useState("");
@@ -63,6 +64,7 @@ export default function ParentRegistrationForm() {
       }
 
       setSubmitted(true);
+      setLearnerIdentity(childName || "Learner", parentName);
       soundFx.playSuccessChime();
       confetti({
         particleCount: 100,

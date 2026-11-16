@@ -13,6 +13,9 @@ import {
   Volume2,
   RefreshCcw,
   Lock,
+  User,
+  Edit3,
+  X,
 } from "lucide-react";
 import { SkillStep, SubjectMeta } from "@/types/curriculum";
 import AudioButton from "./AudioButton";
@@ -20,7 +23,7 @@ import VectorRailTracing from "./VectorRailTracing";
 import TenFrameCounter from "./TenFrameCounter";
 import FreeTrialShowcase from "./FreeTrialShowcase";
 import { soundFx } from "@/utils/audioHelper";
-import { trackLearningEvent } from "@/utils/analytics";
+import { trackLearningEvent, getLearnerIdentity, setLearnerIdentity } from "@/utils/analytics";
 
 interface Props {
   step: SkillStep;
@@ -42,6 +45,31 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
 
   // Storybook state
   const [storyPage, setStoryPage] = useState(0);
+
+  // Learner Identity (Student & Parent tracking)
+  const [learnerName, setLearnerName] = useState("Guest Learner");
+  const [parentName, setParentName] = useState("");
+  const [showNameModal, setShowNameModal] = useState(false);
+  const [inputStudent, setInputStudent] = useState("");
+  const [inputParent, setInputParent] = useState("");
+
+  useEffect(() => {
+    const ident = getLearnerIdentity();
+    setLearnerName(ident.studentName);
+    setParentName(ident.parentName);
+    setInputStudent(ident.studentName === "Guest Learner" ? "" : ident.studentName);
+    setInputParent(ident.parentName);
+  }, []);
+
+  const handleSaveIdentity = (e: React.FormEvent) => {
+    e.preventDefault();
+    const finalStudent = inputStudent.trim() || "Guest Learner";
+    const finalParent = inputParent.trim();
+    setLearnerIdentity(finalStudent, finalParent);
+    setLearnerName(finalStudent);
+    setParentName(finalParent);
+    setShowNameModal(false);
+  };
 
   const currentActivity = step.activities[activityIndex];
 
@@ -198,13 +226,102 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
           <p className="text-slate-600 text-sm mt-1">{step.subtitle}</p>
         </div>
 
-        {/* Big Audio Helper */}
-        <AudioButton
-          textToSpeak={`Step ${step.stepNumber}: ${step.title}. ${step.description}`}
-          label="Read Step Out Loud"
-          size="md"
-        />
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Learner Identity Pill */}
+          <div className="flex items-center gap-2 bg-indigo-50 border-2 border-indigo-200 px-3.5 py-1.5 rounded-2xl shadow-xs">
+            <User className="w-4 h-4 text-indigo-600" />
+            <div className="text-xs">
+              <span className="text-slate-500 font-bold">Learner: </span>
+              <strong className="text-indigo-950 font-black">{learnerName}</strong>
+              {parentName && <span className="text-slate-500 font-medium"> ({parentName})</span>}
+            </div>
+            <button
+              onClick={() => setShowNameModal(true)}
+              className="text-[11px] font-extrabold text-indigo-600 hover:text-indigo-900 underline ml-1 cursor-pointer"
+            >
+              Change
+            </button>
+          </div>
+
+          {/* Big Audio Helper */}
+          <AudioButton
+            textToSpeak={`Step ${step.stepNumber}: ${step.title}. ${step.description}`}
+            label="Read Step Out Loud"
+            size="md"
+          />
+        </div>
       </div>
+
+      {/* Learner Identity Modal */}
+      {showNameModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-slate-200 space-y-4 animate-scale-in">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center">
+                  <User className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-slate-900">Who is Learning Today?</h3>
+                  <p className="text-xs text-slate-500">Student & Parent profile for learning tracking</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowNameModal(false)}
+                className="p-1 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveIdentity} className="space-y-3 pt-2">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
+                  Child / Student Name <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={inputStudent}
+                  onChange={(e) => setInputStudent(e.target.value)}
+                  placeholder="e.g. Sipho, Lindiwe, Thabo"
+                  autoFocus
+                  required
+                  className="w-full px-4 py-2.5 rounded-xl border-2 border-slate-300 focus:border-indigo-600 focus:outline-hidden text-sm font-bold text-slate-900"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
+                  Parent / Guardian Name (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={inputParent}
+                  onChange={(e) => setInputParent(e.target.value)}
+                  placeholder="e.g. Mrs. Khumalo, Bab' uDlamini"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-indigo-600 focus:outline-hidden text-sm font-semibold text-slate-900"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowNameModal(false)}
+                  className="flex-1 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-wider shadow-md cursor-pointer"
+                >
+                  Save & Continue
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Mode Navigation Tabs - Touch & Mobile Responsive */}
       <div className={`grid ${step.decodableBook ? "grid-cols-3" : "grid-cols-2"} gap-1.5 sm:gap-2 p-1 sm:p-1.5 bg-slate-200/90 rounded-2xl mb-6 sm:mb-8`}>

@@ -14,6 +14,8 @@ import {
   BarChart3,
   HelpCircle,
   Lightbulb,
+  User,
+  Search,
 } from "lucide-react";
 
 interface MetricSummary {
@@ -36,10 +38,15 @@ interface StuckPoint {
   accuracy: number;
   friction: "high" | "moderate" | "low";
   commonMistakes: Record<string, number>;
+  strugglingStudents?: string[];
+  successfulStudents?: string[];
   recommendation: string;
 }
 
 interface AnalyticsData {
+  success: boolean;
+  isLiveOnly: boolean;
+  hasLiveEvents: boolean;
   metrics: MetricSummary;
   subjectCounts: Record<string, number>;
   dailyTrend: Array<{ date: string; count: number }>;
@@ -53,6 +60,8 @@ interface AnalyticsData {
     isCorrect?: boolean;
     score?: number;
     chosenOption?: string;
+    studentName?: string;
+    parentName?: string;
     timestamp: string;
   }>;
 }
@@ -61,6 +70,7 @@ export default function AdminAnalyticsDashboard() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [subjectFilter, setSubjectFilter] = useState<string>("all");
+  const [studentSearch, setStudentSearch] = useState<string>("");
 
   useEffect(() => {
     fetchAnalytics();
@@ -332,7 +342,19 @@ export default function AdminAnalyticsDashboard() {
             </p>
           </div>
 
-          {/* Filter by Subject */}
+        {/* Filter by Subject & Student */}
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <div className="relative w-full sm:w-64">
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
+            <input
+              type="text"
+              value={studentSearch}
+              onChange={(e) => setStudentSearch(e.target.value)}
+              placeholder="Filter by child or parent..."
+              className="w-full pl-9 pr-3 py-2 text-xs font-semibold rounded-xl border border-slate-300 focus:outline-hidden focus:border-indigo-600 bg-white"
+            />
+          </div>
+
           <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 shrink-0">
             {[
               { id: "all", label: "All Subjects" },
@@ -354,136 +376,215 @@ export default function AdminAnalyticsDashboard() {
             ))}
           </div>
         </div>
+      </div>
 
-        {/* Stuck Points List */}
-        {filteredStuckPoints.length === 0 ? (
-          <div className="py-12 text-center text-slate-500">
-            <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-            <p className="font-bold text-sm">No bottleneck friction detected! All tested concepts are passing smoothly.</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredStuckPoints.map((item, idx) => {
-              const isHigh = item.friction === "high";
-              const isMod = item.friction === "moderate";
+      {/* Stuck Points List */}
+      {filteredStuckPoints.length === 0 ? (
+        <div className="py-12 text-center text-slate-500 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+          <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+          <p className="font-bold text-sm">
+            {metrics.totalEvents === 0
+              ? "Awaiting live student sessions. Real learner stuck points will appear here automatically."
+              : "No bottleneck friction detected! All attempted concepts are passing smoothly."}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filteredStuckPoints.map((item, idx) => {
+            const isHigh = item.friction === "high";
+            const isMod = item.friction === "moderate";
 
-              return (
-                <div
-                  key={idx}
-                  className={`p-5 sm:p-6 rounded-2xl border-2 transition-all ${
-                    isHigh
-                      ? "bg-rose-50/50 border-rose-300"
-                      : isMod
-                      ? "bg-amber-50/40 border-amber-300"
-                      : "bg-white border-slate-200"
-                  }`}
-                >
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                    {/* Left Details */}
-                    <div className="space-y-1.5 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-base sm:text-lg font-black text-slate-900">{item.title}</span>
-                        <span
-                          className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${
-                            isHigh
-                              ? "bg-rose-600 text-white"
-                              : isMod
-                              ? "bg-amber-500 text-white"
-                              : "bg-emerald-600 text-white"
+            return (
+              <div
+                key={idx}
+                className={`p-5 sm:p-6 rounded-2xl border-2 transition-all ${
+                  isHigh
+                    ? "bg-rose-50/50 border-rose-300"
+                    : isMod
+                    ? "bg-amber-50/40 border-amber-300"
+                    : "bg-white border-slate-200"
+                }`}
+              >
+                <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+                  {/* Left Details */}
+                  <div className="space-y-2 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-base sm:text-lg font-black text-slate-900">{item.title}</span>
+                      <span
+                        className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${
+                          isHigh
+                            ? "bg-rose-600 text-white"
+                            : isMod
+                            ? "bg-amber-500 text-white"
+                            : "bg-emerald-600 text-white"
+                        }`}
+                      >
+                        {isHigh ? "⚠️ High Friction" : isMod ? "Moderate Friction" : "Smooth Mastery"}
+                      </span>
+                      <span className="text-[10px] font-black uppercase bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">
+                        {item.subject}
+                      </span>
+                    </div>
+
+                    {/* Accuracy Bar */}
+                    <div className="flex items-center gap-3">
+                      <div className="w-48 bg-slate-200 h-2.5 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${
+                            isHigh ? "bg-rose-500" : isMod ? "bg-amber-500" : "bg-emerald-500"
                           }`}
-                        >
-                          {isHigh ? "⚠️ High Friction" : isMod ? "Moderate Friction" : "Smooth Mastery"}
-                        </span>
-                        <span className="text-[10px] font-black uppercase bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">
-                          {item.subject}
-                        </span>
+                          style={{ width: `${item.accuracy}%` }}
+                        />
                       </div>
+                      <span className="text-xs font-black text-slate-800">
+                        {item.accuracy}% Accuracy ({item.correctCount} passed / {item.totalAttempts} total attempts)
+                      </span>
+                    </div>
 
-                      {/* Accuracy Bar */}
-                      <div className="flex items-center gap-3">
-                        <div className="w-48 bg-slate-200 h-2.5 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full ${
-                              isHigh ? "bg-rose-500" : isMod ? "bg-amber-500" : "bg-emerald-500"
-                            }`}
-                            style={{ width: `${item.accuracy}%` }}
-                          />
-                        </div>
-                        <span className="text-xs font-black text-slate-800">
-                          {item.accuracy}% Accuracy ({item.correctCount} passed / {item.totalAttempts} total attempts)
+                    {/* Students Who Struggled on this Task */}
+                    {item.strugglingStudents && item.strugglingStudents.length > 0 && (
+                      <div className="pt-1.5 flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-black text-rose-900">
+                          ⚠️ Kids struggling on this task:
                         </span>
-                      </div>
-
-                      {/* Common Mistakes */}
-                      {Object.keys(item.commonMistakes).length > 0 && (
-                        <p className="text-xs text-rose-900 font-semibold pt-1">
-                          ❌ Common wrong selections:{" "}
-                          <span className="font-normal italic">
-                            {Object.entries(item.commonMistakes)
-                              .map(([ans, cnt]) => `"${ans}" (${cnt}x)`)
-                              .join(", ")}
+                        {item.strugglingStudents.map((st, sIdx) => (
+                          <span
+                            key={sIdx}
+                            className="text-xs font-black bg-rose-100 text-rose-950 border border-rose-300 px-2.5 py-0.5 rounded-lg flex items-center gap-1 shadow-2xs"
+                          >
+                            <User className="w-3 h-3 text-rose-600" />
+                            <span>{st}</span>
                           </span>
-                        </p>
-                      )}
-
-                      {/* Teacher Guidance / Pedagogical Recommendation */}
-                      <div className="mt-2 p-3 bg-white/90 border border-slate-200 rounded-xl flex items-start gap-2 shadow-2xs">
-                        <Lightbulb className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                        <p className="text-xs text-slate-700 leading-relaxed">
-                          <strong>Teacher Action:</strong> {item.recommendation}
-                        </p>
+                        ))}
                       </div>
+                    )}
+
+                    {/* Students Who Mastered this Task */}
+                    {item.successfulStudents && item.successfulStudents.length > 0 && (
+                      <div className="pt-1 flex items-center gap-2 flex-wrap text-xs text-emerald-800 font-bold">
+                        <span>✓ Mastered by:</span>
+                        {item.successfulStudents.map((st, sIdx) => (
+                          <span
+                            key={sIdx}
+                            className="text-[11px] font-bold bg-emerald-50 text-emerald-900 border border-emerald-200 px-2 py-0.5 rounded-md"
+                          >
+                            {st}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Common Mistakes */}
+                    {Object.keys(item.commonMistakes).length > 0 && (
+                      <p className="text-xs text-rose-900 font-semibold pt-1">
+                        ❌ Common wrong selections:{" "}
+                        <span className="font-normal italic">
+                          {Object.entries(item.commonMistakes)
+                            .map(([ans, cnt]) => `"${ans}" (${cnt}x)`)
+                            .join(", ")}
+                        </span>
+                      </p>
+                    )}
+
+                    {/* Teacher Guidance / Pedagogical Recommendation */}
+                    <div className="mt-2 p-3 bg-white/90 border border-slate-200 rounded-xl flex items-start gap-2 shadow-2xs">
+                      <Lightbulb className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                      <p className="text-xs text-slate-700 leading-relaxed">
+                        <strong>Teacher Action:</strong> {item.recommendation}
+                      </p>
                     </div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
 
-      {/* Live Recent Learner Activity Feed */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
-        <h3 className="text-base font-black text-slate-900 mb-4 flex items-center gap-2">
+    {/* Live Recent Learner Activity Feed */}
+    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
           <span>Live Learner Activity Stream</span>
         </h3>
+        <span className="text-xs font-bold text-slate-500">
+          Showing real student actions
+        </span>
+      </div>
 
-        <div className="space-y-2.5 max-h-80 overflow-y-auto pr-2">
-          {(data?.recentFeed || []).map((ev) => (
+      <div className="space-y-2.5 max-h-96 overflow-y-auto pr-2">
+        {(!data?.recentFeed || data.recentFeed.length === 0) ? (
+          <div className="py-8 text-center text-slate-500 text-xs font-bold">
+            Awaiting live sessions. Any question answered by a child will show up here live!
+          </div>
+        ) : (
+          (data.recentFeed).map((ev) => (
             <div
               key={ev.id}
-              className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3 text-xs"
+              className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 hover:border-indigo-200 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs"
             >
               <div className="flex items-center gap-2.5 flex-wrap">
-                <span className="text-[10px] font-bold text-slate-500">
-                  {new Date(ev.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                {/* Student & Parent Name Badge */}
+                <div className="inline-flex items-center gap-1.5 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-xl shadow-2xs">
+                  <User className="w-3.5 h-3.5 text-indigo-600" />
+                  <strong className="text-indigo-950 font-black">
+                    {ev.studentName || "Learner"}
+                  </strong>
+                  {ev.parentName && (
+                    <span className="text-slate-500 font-semibold text-[11px]">
+                      (Parent: {ev.parentName})
+                    </span>
+                  )}
+                </div>
+
+                <span className="text-slate-400 font-bold">•</span>
+
+                {/* Task Title */}
+                <span className="font-extrabold text-slate-900 text-sm">
+                  {ev.title || ev.eventType}
                 </span>
-                <span className="font-extrabold text-slate-900">{ev.title || ev.eventType}</span>
+
+                {/* Subject Badge */}
                 {ev.subject && (
-                  <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-800">
+                  <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-white border border-slate-200 text-slate-700">
                     {ev.subject}
                   </span>
                 )}
+              </div>
+
+              <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+                {/* Result Indicator */}
                 {typeof ev.isCorrect === "boolean" && (
                   <span
-                    className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${
-                      ev.isCorrect ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"
+                    className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-lg ${
+                      ev.isCorrect
+                        ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                        : "bg-rose-100 text-rose-800 border border-rose-300"
                     }`}
                   >
                     {ev.isCorrect ? "Correct ✓" : "Retry ↺"}
                   </span>
                 )}
+
+                {/* Quiz Score */}
                 {typeof ev.score === "number" && (
-                  <span className="font-black text-amber-700 bg-amber-100 px-2 py-0.5 rounded-md text-[10px]">
+                  <span className="font-black text-amber-800 bg-amber-100 border border-amber-300 px-2.5 py-1 rounded-lg text-[10px]">
                     Score: {ev.score}%
                   </span>
                 )}
+
+                {/* Time */}
+                <span className="text-[10px] font-semibold text-slate-400">
+                  {new Date(ev.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                </span>
               </div>
             </div>
-          ))}
-        </div>
+          ))
+        )}
       </div>
+    </div>
     </div>
   );
 }
