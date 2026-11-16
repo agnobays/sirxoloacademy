@@ -84,27 +84,28 @@ class AudioEngine {
     });
   }
 
-  // Cheerful audio cheer on correct answer ("Hooray!", "Halala!")
+  // Cheerful audio cheer on correct answer (Plays authentic Hooray audio from YouTube)
   playHooray(isZulu = false) {
-    const englishPraise = [
-      "Hooray! Well done!",
-      "Hooray! You got it right!",
-      "Superstar! That is correct!",
-      "Hooray! Brilliant job!",
-    ];
-    const zuluPraise = [
-      "Halala! Kuhle kakhulu!",
-      "Yebo! Uqinisile!",
-      "Halala! Ngiyakubongela!",
-    ];
+    if (typeof window !== "undefined") {
+      try {
+        const audio = new Audio("/audio/hooray.mp3");
+        audio.currentTime = 0;
+        const promise = audio.play();
+        if (promise !== undefined) {
+          promise.catch(() => {
+            // fallback if browser autoplay blocked
+            const praise = isZulu ? "Halala! Kuhle kakhulu!" : "Hooray! Well done!";
+            this.speakText(praise, isZulu ? "zu-ZA" : "en-ZA");
+          });
+        }
+        return;
+      } catch (err) {
+        // Fallback to speech synthesis
+      }
+    }
 
-    const list = isZulu ? zuluPraise : englishPraise;
-    const praise = list[Math.floor(Math.random() * list.length)];
-
-    // Allow the chime to ring first, then speak cheer
-    setTimeout(() => {
-      this.speakText(praise, isZulu ? "zu-ZA" : "en-ZA");
-    }, 280);
+    const praise = isZulu ? "Halala! Kuhle kakhulu!" : "Hooray! Well done!";
+    this.speakText(praise, isZulu ? "zu-ZA" : "en-ZA");
   }
 
   // Convert linguistic phonics notation (e.g. /s/) to child-friendly natural sounds so TTS never reads "slash"
