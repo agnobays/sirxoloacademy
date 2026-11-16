@@ -51,7 +51,7 @@ export default function RootLayout({
         <Navbar />
         <main className="flex-1 flex flex-col">{children}</main>
         <footer className="bg-white border-t border-slate-200 py-8 text-center text-xs text-slate-500">
-          <p>© 2026 Sir Xolo Academy (sirxoloacademy.co.za). All rights reserved.</p>
+          <p>© 2026 SIR XOLO ACADEMY. All rights reserved.</p>
           <p className="mt-1">Empowering Foundation Phase learners in South Africa.</p>
         </footer>
       </body>
