@@ -44,6 +44,8 @@ export interface LessonActivity {
   feedbackRetry: string;
   tracingTarget?: string;
   tenFrameTarget?: number;
+  counterCount?: number;
+  counterIcon?: string;
 }
 
 export interface QuizQuestion {

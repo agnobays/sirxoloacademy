@@ -165,11 +165,14 @@ class AudioEngine {
     if (phonemes.length > 1) {
       // For blending questions like "Blend the sounds together: /s/ + /a/ + /t/" or "[s] + [a] + [t]"
       cleanSpoken = "Blend the sounds together.";
-    } else {
-      // Single letter question
+    } else if (phonemes.length === 1 || targetLetter) {
+      // Single letter question (e.g. "Listen to the sound: [s]. Which letter makes this sound?")
       cleanSpoken = promptText
-        .replace(/(?:\/|\[\s*)([a-z])(?:\/|\s*\])/gi, "the sound")
+        .replace(/(?:\/|\[\s*)([a-z])(?:\/|\s*\])/gi, "this sound")
         .replace(/[/[\]]/g, " ");
+    } else {
+      // General instructions, descriptions, or breadcrumbs (no phoneme sound to append)
+      cleanSpoken = promptText.replace(/[/[\]]/g, " ");
     }
 
     const utterance = new SpeechSynthesisUtterance(cleanSpoken);
@@ -189,9 +192,12 @@ class AudioEngine {
           // Play the multiple phonemes in sequence (e.g. s -> a -> t)
           this.playPhonemeSequence(phonemes);
         } else {
-          // Play the single target phoneme audio
-          const letter = targetLetter || (phonemes.length === 1 ? phonemes[0] : "s");
-          this.playRecordedPhoneme(letter);
+          // Only play letter audio IF a target letter or phoneme was explicitly in the question!
+          // NEVER fall back to 's' or play unexpected sounds
+          const letter = targetLetter || (phonemes.length === 1 ? phonemes[0] : undefined);
+          if (letter) {
+            this.playRecordedPhoneme(letter);
+          }
         }
       }, 180);
     };

@@ -46,12 +46,6 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
 
   const handleSelectOption = (optionId: string, isCorrect?: boolean) => {
     setSelectedActivityOption(optionId);
-    const chosenOption = currentActivity.options?.find((o) => o.id === optionId);
-
-    // Play recorded phoneme sound if option is a letter
-    if (chosenOption?.label && chosenOption.label.length === 1 && /^[a-zA-Z]$/.test(chosenOption.label)) {
-      soundFx.playRecordedPhoneme(chosenOption.label);
-    }
 
     if (isCorrect) {
       setTimeout(() => {
@@ -314,6 +308,43 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
           )}
 
           {/* Interactive Options or Specialized Widgets */}
+          {currentActivity.type === "number_counter" && (
+            <div className="my-6 p-6 sm:p-8 rounded-3xl bg-amber-50/90 border-3 border-amber-300 shadow-md flex flex-col items-center text-center">
+              <span className="text-xs font-black uppercase tracking-wider text-amber-900 bg-amber-200/70 px-4 py-1.5 rounded-full mb-4 flex items-center gap-1.5 shadow-xs">
+                <span>🧺</span>
+                <span>The Apple Basket</span>
+              </span>
+
+              {/* Realistic Visual Wicker Basket */}
+              <div className="relative w-64 sm:w-80 h-36 sm:h-44 bg-gradient-to-b from-amber-700 via-amber-800 to-amber-950 rounded-b-full border-4 border-amber-950 shadow-2xl flex items-center justify-center pt-2">
+                {/* Basket Rim */}
+                <div className="absolute -top-3 inset-x-2 h-6 bg-amber-600 border-3 border-amber-950 rounded-full shadow-md" />
+
+                {/* Cross-hatch weave effect */}
+                <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#fff_1.5px,transparent_1.5px)] [background-size:14px_14px] rounded-b-full pointer-events-none" />
+
+                {/* Apples inside the basket */}
+                <div className="flex items-center justify-center gap-2 sm:gap-4 z-10 -mt-2">
+                  {Array.from({ length: currentActivity.counterCount || 3 }).map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => soundFx.speakText(`${i + 1}`)}
+                      className="text-5xl sm:text-6xl drop-shadow-lg transform hover:scale-125 active:scale-95 transition-all cursor-pointer select-none"
+                      title={`Apple ${i + 1} (Tap to count)`}
+                    >
+                      {currentActivity.counterIcon || "🍎"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <p className="mt-4 text-xs sm:text-sm font-bold text-amber-950">
+                Look at the apples in the basket! Tap them to count, then select the answer below:
+              </p>
+            </div>
+          )}
+
           {currentActivity.type === "tracing" ? (
             <div className="my-6">
               <VectorRailTracing
