@@ -80,10 +80,19 @@ export default function Home() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+              <Link
+                href="/learn/english/eng-step-1"
+                className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-black text-sm uppercase tracking-wider shadow-lg shadow-amber-400/25 transition-all flex items-center justify-center gap-2 group cursor-pointer"
+              >
+                <Sparkles className="w-4 h-4 text-slate-950 group-hover:rotate-12 transition-transform" />
+                <span>Try Free Interactive Trial</span>
+                <span className="text-[10px] bg-slate-950 text-white font-extrabold px-2 py-0.5 rounded-full uppercase ml-1">Live</span>
+              </Link>
+
               <a
                 href="#register"
-                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-black text-sm uppercase tracking-wider shadow-lg shadow-indigo-600/25 transition-all flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-black text-sm uppercase tracking-wider shadow-lg shadow-indigo-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>Pre-Register for Early Access</span>
                 <ArrowRight className="w-4 h-4" />
@@ -91,10 +100,10 @@ export default function Home() {
 
               <a
                 href="#curriculum"
-                className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-white hover:bg-slate-100 active:scale-95 text-slate-800 font-bold text-sm border border-slate-200 shadow-xs transition-all flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-6 py-4 rounded-2xl bg-white hover:bg-slate-100 active:scale-95 text-slate-800 font-bold text-sm border border-slate-200 shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <BookOpen className="w-4 h-4 text-indigo-600" />
-                <span>Explore 3-Subject Ladder</span>
+                <span>Curriculum</span>
               </a>
             </div>
 

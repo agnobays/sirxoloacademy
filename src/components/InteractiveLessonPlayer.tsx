@@ -18,6 +18,7 @@ import { SkillStep, SubjectMeta } from "@/types/curriculum";
 import AudioButton from "./AudioButton";
 import VectorRailTracing from "./VectorRailTracing";
 import TenFrameCounter from "./TenFrameCounter";
+import FreeTrialShowcase from "./FreeTrialShowcase";
 import { soundFx } from "@/utils/audioHelper";
 
 interface Props {
@@ -111,7 +112,31 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6 sm:py-10">
+    <div className="max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
+      {/* Free Trial Showcase Top Banner */}
+      <div className="mb-6 p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white shadow-md flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0">
+            <Sparkles className="w-4 h-4 text-amber-200" />
+          </div>
+          <div>
+            <div className="text-xs sm:text-sm font-black uppercase tracking-wider flex items-center gap-1.5 flex-wrap">
+              <span>Free Interactive Trial</span>
+              <span className="bg-white/25 px-2 py-0.5 rounded-full text-[10px] font-bold">Step {step.stepNumber} Unlocked</span>
+            </div>
+            <p className="text-[11px] sm:text-xs text-amber-100 font-medium hidden sm:block">
+              Experience authentic recorded sounds, handwriting tracing, and interactive quizzes on phone or tablet!
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/#register"
+          className="shrink-0 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-white text-amber-950 font-black text-xs hover:bg-amber-50 active:scale-95 shadow-sm transition-all"
+        >
+          Pre-Register
+        </Link>
+      </div>
+
       {/* Top Breadcrumb & Step Header */}
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -143,43 +168,43 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
         />
       </div>
 
-      {/* Mode Navigation Tabs */}
-      <div className={`grid ${step.decodableBook ? "grid-cols-3" : "grid-cols-2"} gap-2 p-1.5 bg-slate-200 rounded-2xl mb-8`}>
+      {/* Mode Navigation Tabs - Touch & Mobile Responsive */}
+      <div className={`grid ${step.decodableBook ? "grid-cols-3" : "grid-cols-2"} gap-1.5 sm:gap-2 p-1 sm:p-1.5 bg-slate-200/90 rounded-2xl mb-6 sm:mb-8`}>
         <button
           onClick={() => setActiveTab("activity")}
-          className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold transition-all ${
+          className={`flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
             activeTab === "activity"
               ? "bg-white text-indigo-700 shadow-sm"
               : "text-slate-600 hover:text-slate-900"
           }`}
         >
-          <Sparkles className="w-4 h-4 text-amber-500" />
-          <span>1. Interactive Activities</span>
+          <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500 shrink-0" />
+          <span className="truncate">1. Activities</span>
         </button>
 
         <button
           onClick={() => setActiveTab("quiz")}
-          className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold transition-all ${
+          className={`flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
             activeTab === "quiz"
               ? "bg-white text-indigo-700 shadow-sm"
               : "text-slate-600 hover:text-slate-900"
           }`}
         >
-          <HelpCircle className="w-4 h-4 text-emerald-500" />
-          <span>2. Mastery Check</span>
+          <HelpCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 shrink-0" />
+          <span className="truncate">2. Quiz</span>
         </button>
 
         {step.decodableBook && (
           <button
             onClick={() => setActiveTab("storybook")}
-            className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold transition-all ${
+            className={`flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
               activeTab === "storybook"
                 ? "bg-white text-indigo-700 shadow-sm"
                 : "text-slate-600 hover:text-slate-900"
             }`}
           >
-            <BookOpen className="w-4 h-4 text-purple-600" />
-            <span>3. Decodable Story</span>
+            <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-600 shrink-0" />
+            <span className="truncate">3. Story</span>
           </button>
         )}
       </div>
@@ -248,6 +273,42 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
               >
                 <Volume2 className="w-5 h-5 animate-pulse" />
                 <span>Play Sound</span>
+              </button>
+            </div>
+          )}
+
+          {/* Interactive CVC Blending Sound Player for /s/ + /a/ + /t/ */}
+          {currentActivity.type === "cvc_builder" && (
+            <div className="my-6 p-5 sm:p-6 rounded-3xl bg-indigo-50 border-3 border-indigo-200 flex flex-col items-center gap-4 shadow-sm text-center">
+              <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-indigo-700 bg-white/90 px-3.5 py-1.5 rounded-full border border-indigo-200 shadow-xs">
+                Tap each letter to hear its sound, or blend them together!
+              </span>
+
+              {/* Individual Sound Tiles */}
+              <div className="flex items-center gap-2 sm:gap-4 my-1">
+                {["s", "a", "t"].map((letter, idx) => (
+                  <React.Fragment key={letter}>
+                    <button
+                      type="button"
+                      onClick={() => soundFx.playRecordedPhoneme(letter)}
+                      className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-white border-3 border-indigo-300 hover:border-indigo-600 active:scale-90 text-indigo-950 font-black text-xl sm:text-3xl shadow-md hover:shadow-lg transition-all flex flex-col items-center justify-center cursor-pointer group"
+                    >
+                      <span className="group-hover:text-indigo-600 transition-colors uppercase">{letter}</span>
+                      <span className="text-[8px] sm:text-[10px] text-indigo-500 font-bold uppercase mt-0.5">🔊 Sound</span>
+                    </button>
+                    {idx < 2 && <span className="text-xl sm:text-3xl font-black text-indigo-400">+</span>}
+                  </React.Fragment>
+                ))}
+              </div>
+
+              {/* Blend All Button */}
+              <button
+                type="button"
+                onClick={() => soundFx.playPhonemeSequence(["s", "a", "t"])}
+                className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-black text-xs sm:text-sm uppercase tracking-wider shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2.5 cursor-pointer"
+              >
+                <Volume2 className="w-5 h-5 animate-pulse" />
+                <span>Play Blended Sounds (/s/ + /a/ + /t/)</span>
               </button>
             </div>
           )}
@@ -494,6 +555,9 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
           </div>
         </div>
       )}
+
+      {/* Free Trial Showcase & Full Academy Overview */}
+      <FreeTrialShowcase currentSubjectId={subject.id} isMastered={isMastered} />
     </div>
   );
 }

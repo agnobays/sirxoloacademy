@@ -17,54 +17,54 @@ interface StrokeDef {
   startLabel: string;
 }
 
-// Normalized vector splines on a 500x500 viewBox
+// Normalized vector splines on a 600x400 viewBox (Landscape, with generous margins)
+// Top line at Y=75, Midline at Y=195, Baseline at Y=315
 const LETTER_PATHS: Record<string, StrokeDef[]> = {
   s: [
     {
       id: "s-curve",
-      pathData: "M 330,135 C 290,95 180,95 160,165 C 145,225 240,250 265,285 C 310,345 290,410 160,405",
+      pathData: "M 355,120 C 320,80 235,80 225,145 C 215,200 295,215 315,245 C 350,295 330,325 240,310",
       startLabel: "1",
     },
   ],
   A: [
     {
       id: "A-left",
-      pathData: "M 250,95 L 140,410",
+      pathData: "M 300,85 L 210,315",
       startLabel: "1",
     },
     {
       id: "A-right",
-      pathData: "M 250,95 L 360,410",
+      pathData: "M 300,85 L 390,315",
       startLabel: "2",
     },
     {
       id: "A-bar",
-      pathData: "M 180,270 L 320,270",
+      pathData: "M 245,215 L 355,215",
       startLabel: "3",
     },
   ],
-  // Fallback for t, p, etc.
   t: [
     {
       id: "t-stem",
-      pathData: "M 250,90 L 250,360 C 250,405 280,410 310,405",
+      pathData: "M 300,80 L 300,285 C 300,315 320,320 345,315",
       startLabel: "1",
     },
     {
       id: "t-cross",
-      pathData: "M 180,180 L 320,180",
+      pathData: "M 240,150 L 360,150",
       startLabel: "2",
     },
   ],
   p: [
     {
       id: "p-stem",
-      pathData: "M 180,110 L 180,430",
+      pathData: "M 240,95 L 240,350",
       startLabel: "1",
     },
     {
       id: "p-loop",
-      pathData: "M 180,150 C 220,130 320,140 320,240 C 320,330 220,330 180,310",
+      pathData: "M 240,115 C 275,100 360,110 360,195 C 360,270 275,270 240,255",
       startLabel: "2",
     },
   ],
@@ -80,7 +80,7 @@ const BRUSH_COLORS = [
 
 export default function VectorRailTracing({
   character,
-  guideHint = "Follow the star along the curves of the letter!",
+  guideHint = "Follow the glowing star along the curves of the letter!",
   onComplete,
 }: VectorRailTracingProps) {
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -103,7 +103,7 @@ export default function VectorRailTracing({
     const hiddenPath = hiddenPathRef.current;
     if (!hiddenPath) return;
 
-    const currentDef = strokes[activeStrokeIdx];
+    const currentDef = strokes[activeStrokeIdx] || strokes[0];
     hiddenPath.setAttribute("d", currentDef.pathData);
     const length = hiddenPath.getTotalLength();
     totalPathLength.current = length;
@@ -118,32 +118,40 @@ export default function VectorRailTracing({
     sampledPathPoints.current = pts;
   }, [character, activeStrokeIdx, strokes]);
 
-  const getSVGPoint = (e: React.MouseEvent | React.TouchEvent) => {
+  // W3C Standard screen-to-SVG coordinates transformation
+  const getSVGPoint = (clientX: number, clientY: number) => {
     const svg = svgRef.current;
     if (!svg) return { x: 0, y: 0 };
+
+    const pt = svg.createSVGPoint();
+    pt.x = clientX;
+    pt.y = clientY;
+
+    const ctm = svg.getScreenCTM();
+    if (ctm) {
+      const transformed = pt.matrixTransform(ctm.inverse());
+      return { x: transformed.x, y: transformed.y };
+    }
+
     const rect = svg.getBoundingClientRect();
-
-    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
-    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
-
-    const scaleX = 500 / rect.width;
-    const scaleY = 500 / rect.height;
-
     return {
-      x: (clientX - rect.left) * scaleX,
-      y: (clientY - rect.top) * scaleY,
+      x: ((clientX - rect.left) / rect.width) * 600,
+      y: ((clientY - rect.top) / rect.height) * 400,
     };
   };
 
-  const handlePointerDown = (e: React.MouseEvent | React.TouchEvent) => {
+  const handlePointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
     if (hasCompleted) return;
-    if ("touches" in e) e.stopPropagation();
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      // Ignored if capture unsupported
+    }
 
-    const pt = getSVGPoint(e);
+    const pt = getSVGPoint(e.clientX, e.clientY);
     const samples = sampledPathPoints.current;
     if (samples.length === 0) return;
 
-    // Check if touch is near the current progress position (within comfortable 55px corridor)
     const currentDist = strokeProgress[activeStrokeIdx] || 0;
     const currentSampleIdx = Math.min(
       Math.floor((currentDist / (totalPathLength.current || 1)) * samples.length),
@@ -153,24 +161,20 @@ export default function VectorRailTracing({
 
     const distFromTarget = Math.hypot(pt.x - targetPt.x, pt.y - targetPt.y);
 
-    if (distFromTarget <= 65) {
+    // Generous 75px start area so mobile fingers easily grab the star
+    if (distFromTarget <= 75) {
       setIsTracing(true);
       setHintMessage(null);
     } else {
-      // Finger touched too far away (e.g. attempting to draw across like a T)
       soundFx.playRetryBoing();
-      setHintMessage("Start at the glowing star and trace along the curve!");
+      setHintMessage("Touch the glowing star ⭐ to begin tracing!");
     }
   };
 
-  const handlePointerMove = (e: React.MouseEvent | React.TouchEvent) => {
+  const handlePointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
     if (!isTracing || hasCompleted) return;
-    if ("touches" in e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
 
-    const pt = getSVGPoint(e);
+    const pt = getSVGPoint(e.clientX, e.clientY);
     const samples = sampledPathPoints.current;
     const totalLen = totalPathLength.current;
     if (samples.length === 0 || totalLen === 0) return;
@@ -181,8 +185,8 @@ export default function VectorRailTracing({
       samples.length - 1
     );
 
-    // Look ahead within a narrow forward window (up to +12 sample steps)
-    const maxLookahead = Math.min(currentSampleIdx + 14, samples.length - 1);
+    // Look ahead within a forward window
+    const maxLookahead = Math.min(currentSampleIdx + 18, samples.length - 1);
     let bestDist = Infinity;
     let bestSampleIdx = currentSampleIdx;
 
@@ -195,10 +199,8 @@ export default function VectorRailTracing({
       }
     }
 
-    // STRICT RAIL CONSTRAINT:
-    // User finger must remain within 48px of the forward curve rail!
-    // If they draw perpendicular (like a "T" across an "S"), bestDist will exceed 48px, so it refuses to advance!
-    if (bestDist <= 50 && bestSampleIdx > currentSampleIdx) {
+    // Corridors: must be within 55px of the forward curve (accommodates mobile thumbs)
+    if (bestDist <= 55 && bestSampleIdx > currentSampleIdx) {
       const advancedDist = samples[bestSampleIdx].dist;
       setStrokeProgress((prev) => {
         const next = [...prev];
@@ -206,9 +208,8 @@ export default function VectorRailTracing({
         return next;
       });
 
-      // Check if current stroke reached the end!
+      // Check if current stroke reached the end
       if (bestSampleIdx >= samples.length - 2) {
-        // Complete this stroke
         setStrokeProgress((prev) => {
           const next = [...prev];
           next[activeStrokeIdx] = totalLen;
@@ -216,13 +217,11 @@ export default function VectorRailTracing({
         });
 
         if (activeStrokeIdx < strokes.length - 1) {
-          // Advance to next stroke (e.g. for letter A)
           soundFx.playSuccessChime();
           setActiveStrokeIdx((prev) => prev + 1);
           setIsTracing(false);
-          setHintMessage(`Stroke ${activeStrokeIdx + 1} complete! Now trace stroke ${activeStrokeIdx + 2}.`);
+          setHintMessage(`Stroke ${activeStrokeIdx + 1} complete! Now follow stroke ${activeStrokeIdx + 2} ⭐`);
         } else {
-          // All strokes complete! Mastery!
           setIsTracing(false);
           setHasCompleted(true);
           soundFx.playSuccessChime();
@@ -235,8 +234,15 @@ export default function VectorRailTracing({
     }
   };
 
-  const handlePointerUp = () => {
+  const handlePointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
     setIsTracing(false);
+    try {
+      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      }
+    } catch {
+      // Ignore
+    }
   };
 
   const handleReset = () => {
@@ -252,7 +258,7 @@ export default function VectorRailTracing({
     soundFx.speakPhoneme(character);
   };
 
-  // Compute current star position along active stroke
+  // Compute current star position
   const currentActiveLen = strokeProgress[activeStrokeIdx] || 0;
   const currentTotalLen = totalPathLength.current || 1;
   const samples = sampledPathPoints.current;
@@ -260,9 +266,9 @@ export default function VectorRailTracing({
     Math.floor((currentActiveLen / currentTotalLen) * samples.length),
     samples.length - 1
   );
-  const currentStarPos = samples[sampleIdx] || samples[0] || { x: 250, y: 250 };
+  const currentStarPos = samples[sampleIdx] || samples[0] || { x: 300, y: 200 };
 
-  // Overall completion percentage
+  // Overall percentage
   const totalOverallLength = strokes.length * 100;
   const currentOverallSum = strokeProgress.reduce((acc, p, idx) => {
     const len = idx === activeStrokeIdx ? totalPathLength.current || 1 : 100;
@@ -323,44 +329,43 @@ export default function VectorRailTracing({
         </span>
       </div>
 
-      {/* SVG Rail Container */}
-      <div className="relative w-full aspect-4/3 max-h-[380px] bg-white rounded-3xl border-4 border-dashed border-indigo-300 shadow-xl overflow-hidden select-none touch-none">
-        {/* Hidden path used strictly for native SVG arc calculations */}
+      {/* SVG Rail Container - 600x400 Landscape, Fully Fitted, Never Cut Off */}
+      <div className="relative w-full aspect-[6/4] bg-white rounded-3xl border-4 border-dashed border-indigo-300 shadow-xl select-none touch-none overflow-hidden">
+        {/* Hidden path for exact SVG length math */}
         <svg className="hidden" aria-hidden="true">
           <path ref={hiddenPathRef} d="" />
         </svg>
 
         <svg
           ref={svgRef}
-          viewBox="0 0 500 500"
-          className="w-full h-full cursor-pointer select-none"
-          onMouseDown={handlePointerDown}
-          onMouseMove={handlePointerMove}
-          onMouseUp={handlePointerUp}
-          onTouchStart={handlePointerDown}
-          onTouchMove={handlePointerMove}
-          onTouchEnd={handlePointerUp}
+          viewBox="0 0 600 400"
+          preserveAspectRatio="xMidYMid meet"
+          className="w-full h-full cursor-pointer select-none touch-none"
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
         >
           {/* Paper Writing Rule Lines */}
-          <line x1="20" y1="110" x2="480" y2="110" stroke="#E2E8F0" strokeWidth="2.5" />
-          <line x1="20" y1="260" x2="480" y2="260" stroke="#CBD5E1" strokeWidth="2" strokeDasharray="8 6" />
-          <line x1="20" y1="410" x2="480" y2="410" stroke="#64748B" strokeWidth="3" />
+          <line x1="30" y1="75" x2="570" y2="75" stroke="#E2E8F0" strokeWidth="2.5" />
+          <line x1="30" y1="195" x2="570" y2="195" stroke="#CBD5E1" strokeWidth="2" strokeDasharray="8 6" />
+          <line x1="30" y1="315" x2="570" y2="315" stroke="#64748B" strokeWidth="3" />
 
           {/* Background Letter Rail Track (Dashed Corridor) */}
-          {strokes.map((stroke, idx) => (
+          {strokes.map((stroke) => (
             <path
               key={`track-${stroke.id}`}
               d={stroke.pathData}
               fill="none"
-              stroke="#E2E8F0"
-              strokeWidth="56"
+              stroke="#F1F5F9"
+              strokeWidth="58"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
           ))}
 
           {/* Inner Dashed Guideline */}
-          {strokes.map((stroke, idx) => (
+          {strokes.map((stroke) => (
             <path
               key={`dashed-${stroke.id}`}
               d={stroke.pathData}
@@ -373,7 +378,7 @@ export default function VectorRailTracing({
             />
           ))}
 
-          {/* Completed / Active Inked Trail */}
+          {/* Inked Liquid Trail */}
           {strokes.map((stroke, idx) => {
             const isCurrent = idx === activeStrokeIdx;
             const progressDist = strokeProgress[idx] || 0;
@@ -385,7 +390,7 @@ export default function VectorRailTracing({
                 d={stroke.pathData}
                 fill="none"
                 stroke={brushColor}
-                strokeWidth="48"
+                strokeWidth="50"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 style={{
@@ -396,11 +401,11 @@ export default function VectorRailTracing({
             );
           })}
 
-          {/* Glowing Animated Follow-Star (Target position on rail) */}
+          {/* Glowing Animated Follow-Star */}
           {!hasCompleted && currentStarPos && (
             <g transform={`translate(${currentStarPos.x}, ${currentStarPos.y})`}>
-              <circle r="22" fill="#FDE047" opacity="0.4" className="animate-ping" />
-              <circle r="18" fill="#F59E0B" stroke="#FFFFFF" strokeWidth="3" shadow-lg="true" />
+              <circle r="24" fill="#FDE047" opacity="0.45" className="animate-ping" />
+              <circle r="18" fill="#F59E0B" stroke="#FFFFFF" strokeWidth="3" />
               <text textAnchor="middle" dy="5" fontSize="14" fontWeight="900" fill="#78350F">
                 ⭐
               </text>
@@ -410,7 +415,6 @@ export default function VectorRailTracing({
           {/* Numbered Start Markers on Each Stroke */}
           {strokes.map((stroke, idx) => {
             if (strokeProgress[idx] > 20) return null;
-            // Get starting point from path data
             const match = stroke.pathData.match(/M\s*([\d.]+)[,\s]+([\d.]+)/);
             if (!match) return null;
             const startX = parseFloat(match[1]);
@@ -418,7 +422,7 @@ export default function VectorRailTracing({
 
             return (
               <g key={`start-badge-${stroke.id}`} transform={`translate(${startX}, ${startY})`}>
-                <circle r="14" fill="#10B981" stroke="#FFFFFF" strokeWidth="2.5" />
+                <circle r="15" fill="#10B981" stroke="#FFFFFF" strokeWidth="2.5" />
                 <text textAnchor="middle" dy="4" fontSize="12" fontWeight="900" fill="#FFFFFF">
                   {stroke.startLabel}
                 </text>

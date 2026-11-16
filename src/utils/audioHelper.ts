@@ -139,7 +139,16 @@ class AudioEngine {
       .replace(/\/sh\//gi, " shhh ")
       .replace(/\/ch\//gi, " ch ")
       .replace(/\/th\//gi, " th ")
-      .replace(/\//g, " "); // Strip any remaining forward slashes so "slash" is NEVER uttered
+      .replace(/(?:\/|\[\s*)([a-z])(?:\/|\s*\])/gi, " $1 ")
+      .replace(/[/[\]]/g, " "); // Strip any remaining forward slashes or brackets so "slash" or "bracket" is NEVER uttered
+  }
+
+  // Play an array of phoneme sounds in sequence with natural pedagogical pauses
+  async playPhonemeSequence(letters: string[]): Promise<void> {
+    for (const letter of letters) {
+      await this.playRecordedPhoneme(letter);
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
   }
 
   // Speak question prompt and seamlessly chain the real recorded phoneme audio
@@ -147,19 +156,21 @@ class AudioEngine {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
 
-    // Auto-extract letter if not provided
-    let letterToPlay = targetLetter;
-    if (!letterToPlay) {
-      const match = promptText.match(/\/([a-z])\//i) || promptText.match(/letter\s+['"]?([a-z])['"]?/i);
-      if (match) {
-        letterToPlay = match[1];
-      }
-    }
+    // Extract all phonetic notations: supports both slashes (/s/, /a/, /t/) and brackets ([s], [a], [t], [ t ])
+    const matches = Array.from(promptText.matchAll(/(?:\/|\[\s*)([a-z])(?:\/|\s*\])/gi));
+    const phonemes = matches.map((m) => m[1].toLowerCase());
 
-    // Replace phonetic slash notations with "this sound" in spoken sentences so TTS never says "slash" or "s s s"
-    const cleanSpoken = promptText
-      .replace(/\/([a-z])\//gi, "this sound")
-      .replace(/\//g, " ");
+    // Clean spoken text so it NEVER speaks "slash", "bracket", or robotic words
+    let cleanSpoken: string;
+    if (phonemes.length > 1) {
+      // For blending questions like "Blend the sounds together: /s/ + /a/ + /t/" or "[s] + [a] + [t]"
+      cleanSpoken = "Blend the sounds together.";
+    } else {
+      // Single letter question
+      cleanSpoken = promptText
+        .replace(/(?:\/|\[\s*)([a-z])(?:\/|\s*\])/gi, "the sound")
+        .replace(/[/[\]]/g, " ");
+    }
 
     const utterance = new SpeechSynthesisUtterance(cleanSpoken);
     utterance.lang = lang;
@@ -172,13 +183,18 @@ class AudioEngine {
       utterance.voice = preferredVoice;
     }
 
-    if (letterToPlay) {
-      utterance.onend = () => {
-        setTimeout(() => {
-          this.playRecordedPhoneme(letterToPlay!);
-        }, 180);
-      };
-    }
+    utterance.onend = () => {
+      setTimeout(() => {
+        if (phonemes.length > 1) {
+          // Play the multiple phonemes in sequence (e.g. s -> a -> t)
+          this.playPhonemeSequence(phonemes);
+        } else {
+          // Play the single target phoneme audio
+          const letter = targetLetter || (phonemes.length === 1 ? phonemes[0] : "s");
+          this.playRecordedPhoneme(letter);
+        }
+      }, 180);
+    };
 
     window.speechSynthesis.speak(utterance);
   }
@@ -192,21 +208,29 @@ class AudioEngine {
       }
 
       const clean = letter.trim().toLowerCase().replace(/[^a-z]/g, "");
-      if (!clean || clean.length > 2) {
+      if (!clean) {
         resolve(false);
         return;
       }
 
       const audioPath = `/audio/phonics/${clean}.mp3`;
       const audio = new Audio(audioPath);
-      audio.onended = () => resolve(true);
-      audio.onerror = () => resolve(false);
+
+      audio.onended = () => {
+        resolve(true);
+      };
+
+      audio.onerror = () => {
+        console.warn(`Could not load /audio/phonics/${clean}.mp3`);
+        resolve(false);
+      };
 
       const playPromise = audio.play();
       if (playPromise !== undefined) {
-        playPromise.then(() => resolve(true)).catch(() => resolve(false));
-      } else {
-        resolve(true);
+        playPromise.catch((err) => {
+          console.warn(`Autoplay blocked for ${clean}:`, err);
+          resolve(false);
+        });
       }
     });
   }
