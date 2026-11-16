@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Sparkles, BookOpen, ShoppingBag, ShieldCheck, UserCheck } from "lucide-react";
+import { Sparkles, ArrowDown } from "lucide-react";
 
 export default function Navbar() {
-  const pathname = usePathname();
-
-  const isKidMode = pathname?.startsWith("/learn");
+  const scrollToRegister = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const el = document.getElementById("register");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
@@ -30,75 +33,21 @@ export default function Navbar() {
             </div>
           </Link>
 
-          {/* Navigation Links */}
-          <nav className="hidden md:flex items-center gap-2">
-            <Link
-              href="/learn"
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
-                isKidMode
-                  ? "bg-indigo-600 text-white shadow-sm shadow-indigo-200"
-                  : "text-slate-700 hover:bg-slate-100"
-              }`}
-            >
-              <Sparkles className="w-4 h-4 text-amber-300" />
-              <span>Learner Zone</span>
-            </Link>
+          {/* Right Header Status / Action */}
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <span>Priority Waitlist Open</span>
+            </div>
 
-            <Link
-              href="/store"
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
-                pathname?.startsWith("/store")
-                  ? "bg-emerald-600 text-white shadow-sm shadow-emerald-200"
-                  : "text-slate-700 hover:bg-slate-100"
-              }`}
+            <a
+              href="#register"
+              onClick={scrollToRegister}
+              className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
             >
-              <ShoppingBag className="w-4 h-4" />
-              <span>Workbooks & Stories</span>
-            </Link>
-
-            <Link
-              href="/parents"
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
-                pathname?.startsWith("/parents")
-                  ? "bg-slate-900 text-white"
-                  : "text-slate-700 hover:bg-slate-100"
-              }`}
-            >
-              <UserCheck className="w-4 h-4" />
-              <span>Parent Portal</span>
-            </Link>
-
-            <Link
-              href="/admin"
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors ${
-                pathname?.startsWith("/admin") ? "text-indigo-600 font-bold" : ""
-              }`}
-            >
-              <ShieldCheck className="w-4 h-4" />
-              <span>Sir Xolo CMS</span>
-            </Link>
-          </nav>
-
-          {/* Mobile Fast Links */}
-          <div className="flex md:hidden items-center gap-2">
-            <Link
-              href="/learn"
-              className="px-3 py-1.5 bg-indigo-600 text-white font-bold text-xs rounded-lg shadow-xs"
-            >
-              Learn
-            </Link>
-            <Link
-              href="/store"
-              className="px-3 py-1.5 bg-emerald-600 text-white font-bold text-xs rounded-lg shadow-xs"
-            >
-              Store
-            </Link>
-            <Link
-              href="/parents"
-              className="px-3 py-1.5 bg-slate-800 text-white font-bold text-xs rounded-lg shadow-xs"
-            >
-              Parents
-            </Link>
+              <span>Pre-Register</span>
+              <ArrowDown className="w-3.5 h-3.5" />
+            </a>
           </div>
         </div>
       </div>
