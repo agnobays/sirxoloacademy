@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import confetti from "canvas-confetti";
+import { triggerFullScreenConfetti } from "@/utils/confettiHelper";
 import { soundFx } from "@/utils/audioHelper";
 import { Sparkles, CheckCircle2, RotateCcw, Volume2, Trophy } from "lucide-react";
 
@@ -51,11 +51,8 @@ export default function TenFrameCounter({
     if (newFilledCount === targetNumber) {
       setIsSuccess(true);
       soundFx.playFanfare();
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-      });
+      soundFx.playHooray();
+      triggerFullScreenConfetti();
       if (onMastered) {
         onMastered();
       }

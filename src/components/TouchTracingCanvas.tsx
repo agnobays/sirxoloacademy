@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useEffect, useCallback } from "react";
-import confetti from "canvas-confetti";
+import { triggerFullScreenConfetti } from "@/utils/confettiHelper";
 import { soundFx } from "@/utils/audioHelper";
 import { RotateCcw, CheckCircle2, Volume2, Sparkles, RefreshCcw } from "lucide-react";
 
@@ -280,11 +280,7 @@ export default function TouchTracingCanvas({
 
     soundFx.playSuccessChime();
     soundFx.playHooray();
-    confetti({
-      particleCount: 90,
-      spread: 75,
-      origin: { y: 0.6 },
-    });
+    triggerFullScreenConfetti();
     setHasCompleted(true);
     setValidationMsg("Wonderful handwriting! You traced the letter beautifully! ⭐");
     if (onComplete) {

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import confetti from "canvas-confetti";
+import { triggerFullScreenConfetti } from "@/utils/confettiHelper";
 import {
   CheckCircle2,
   HelpCircle,
@@ -48,6 +48,7 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
     if (isCorrect) {
       soundFx.playSuccessChime();
       soundFx.playHooray(subject.id === "isizulu");
+      triggerFullScreenConfetti();
       setActivityFeedback({
         isSuccess: true,
         message: currentActivity.feedbackSuccess,
@@ -93,11 +94,7 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
       setIsMastered(true);
       soundFx.playFanfare();
       soundFx.playHooray(subject.id === "isizulu");
-      confetti({
-        particleCount: 120,
-        spread: 80,
-        origin: { y: 0.6 },
-      });
+      triggerFullScreenConfetti();
     } else {
       soundFx.playRetryBoing();
     }
