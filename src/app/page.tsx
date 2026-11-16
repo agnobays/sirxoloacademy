@@ -426,9 +426,9 @@ export default function Home() {
                       <BookOpen className="w-6 h-6" />
                     </div>
                     <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wider">Physical Workbook</span>
-                    <h4 className="text-lg font-black text-white mt-1">Phonics & Tracing Activity Pack</h4>
+                    <h4 className="text-lg font-black text-white mt-1">Foundation Activity Workbooks</h4>
                     <p className="text-xs text-slate-300 mt-2">
-                      80+ pages of letter formation, sound blending sliders, and CVC word exercises.
+                      Pencil-on-paper activity books for tactile handwriting, letter tracing, and numeracy practice.
                     </p>
                   </div>
                   <div className="mt-6 pt-4 border-t border-slate-700 flex items-center justify-between">
@@ -443,9 +443,9 @@ export default function Home() {
                       <ShoppingBag className="w-6 h-6" />
                     </div>
                     <span className="text-[11px] font-bold text-indigo-400 uppercase tracking-wider">Decodable Reader</span>
-                    <h4 className="text-lg font-black text-white mt-1">Sipho & The Sun / Ilanga</h4>
+                    <h4 className="text-lg font-black text-white mt-1">Decodable Storybooks</h4>
                     <p className="text-xs text-slate-300 mt-2">
-                      Bilingual decodable reader with native audio narration and comprehension questions.
+                      Interactive decodable readers with synchronized audio narration and reading comprehension questions.
                     </p>
                   </div>
                   <div className="mt-6 pt-4 border-t border-slate-700 flex items-center justify-between">

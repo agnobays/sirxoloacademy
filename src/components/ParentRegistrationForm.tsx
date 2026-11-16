@@ -207,7 +207,7 @@ export default function ParentRegistrationForm() {
               </label>
               <input
                 type="text"
-                placeholder="e.g. Sipho"
+                placeholder="Child's Name"
                 value={childName}
                 onChange={(e) => setChildName(e.target.value)}
                 className="w-full p-2.5 sm:p-3 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold text-sm focus:border-indigo-600 focus:outline-hidden"
