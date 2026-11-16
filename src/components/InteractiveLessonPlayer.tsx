@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, Fragment } from "react";
 import Link from "next/link";
 import { triggerFullScreenConfetti } from "@/utils/confettiHelper";
 import {
@@ -287,7 +287,7 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
               {/* Individual Sound Tiles */}
               <div className="flex items-center gap-2 sm:gap-4 my-1">
                 {["s", "a", "t"].map((letter, idx) => (
-                  <React.Fragment key={letter}>
+                  <Fragment key={letter}>
                     <button
                       type="button"
                       onClick={() => soundFx.playRecordedPhoneme(letter)}
@@ -297,7 +297,7 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
                       <span className="text-[8px] sm:text-[10px] text-indigo-500 font-bold uppercase mt-0.5">🔊 Sound</span>
                     </button>
                     {idx < 2 && <span className="text-xl sm:text-3xl font-black text-indigo-400">+</span>}
-                  </React.Fragment>
+                  </Fragment>
                 ))}
               </div>
 
