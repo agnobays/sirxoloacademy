@@ -38,9 +38,9 @@ export default function Home() {
             {/* Left Column: Hero Content */}
             <div className="lg:col-span-7 space-y-6 sm:space-y-8 text-center lg:text-left">
               {/* Category Pill */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-indigo-100 shadow-sm text-xs sm:text-sm font-bold text-indigo-700">
-                <span className="flex h-2 w-2 rounded-full bg-indigo-600 animate-pulse" />
-                <span>Foundation Phase Mastery (Ages 4–9) • South Africa</span>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950 shadow-sm text-xs sm:text-sm font-black uppercase tracking-wider">
+                <span className="flex h-2 w-2 rounded-full bg-slate-950 animate-ping" />
+                <span>📢 Official Announcement • Launching 2026/2027</span>
               </div>
 
               {/* High-Impact Headline */}
@@ -56,6 +56,30 @@ export default function Home() {
                 South Africa’s premier interactive, self-paced learning platform. No rigid Grade 1/2/3 labels.
                 Children progress through <strong className="text-slate-900 font-bold">continuous step-by-step skill ladders</strong> with bite-sized videos by Sir Xolo, authentic audio pronunciations, and auto-marked tactile quizzes.
               </p>
+
+              {/* App Store & Play Store Announcement Badges */}
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-1">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-md">
+                  <Smartphone className="w-4 h-4 text-emerald-400" />
+                  <div className="text-left">
+                    <span className="text-[10px] text-slate-400 block leading-none">Coming Soon to</span>
+                    <span className="font-black">Google Play (APK)</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-md">
+                  <Layers className="w-4 h-4 text-indigo-400" />
+                  <div className="text-left">
+                    <span className="text-[10px] text-slate-400 block leading-none">Coming Soon to</span>
+                    <span className="font-black">Apple App Store (iOS)</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold">
+                  <Sparkles className="w-4 h-4 text-amber-600" />
+                  <span>Academy Kiosk Tablets</span>
+                </div>
+              </div>
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
