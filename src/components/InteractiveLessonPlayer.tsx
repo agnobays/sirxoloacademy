@@ -16,6 +16,7 @@ import {
   User,
   Edit3,
   X,
+  RotateCcw,
 } from "lucide-react";
 import { SkillStep, SubjectMeta } from "@/types/curriculum";
 import AudioButton from "./AudioButton";
@@ -24,6 +25,11 @@ import TenFrameCounter from "./TenFrameCounter";
 import FreeTrialShowcase from "./FreeTrialShowcase";
 import { soundFx } from "@/utils/audioHelper";
 import { trackLearningEvent, getLearnerIdentity, setLearnerIdentity } from "@/utils/analytics";
+import {
+  getStepProgress,
+  saveStepProgress,
+  resetStepProgress,
+} from "@/utils/progressManager";
 
 interface Props {
   step: SkillStep;
@@ -52,6 +58,7 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
   const [showNameModal, setShowNameModal] = useState(false);
   const [inputStudent, setInputStudent] = useState("");
   const [inputParent, setInputParent] = useState("");
+  const [resumedNotice, setResumedNotice] = useState<string | null>(null);
 
   useEffect(() => {
     const ident = getLearnerIdentity();
@@ -59,7 +66,28 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
     setParentName(ident.parentName);
     setInputStudent(ident.studentName === "Guest Learner" ? "" : ident.studentName);
     setInputParent(ident.parentName);
-  }, []);
+
+    // Retrieve saved progress for this step and learner
+    const saved = getStepProgress(subject.id, step.id, ident.studentName);
+    if (saved) {
+      if (saved.isMastered) {
+        setIsMastered(true);
+      }
+      if (saved.quizScore !== null) {
+        setQuizScore(saved.quizScore);
+        setIsQuizSubmitted(true);
+      }
+      if (saved.storyPage > 0 && step.decodableBook) {
+        setStoryPage(Math.min(saved.storyPage, step.decodableBook.pages.length - 1));
+      }
+      if (saved.activityIndex > 0 && saved.activityIndex < step.activities.length && !saved.isMastered) {
+        setActivityIndex(saved.activityIndex);
+        setResumedNotice(`Resumed at Activity ${saved.activityIndex + 1} of ${step.activities.length}`);
+      } else if (saved.isMastered) {
+        setResumedNotice(`Welcome back! You previously mastered this step (${saved.quizScore ?? 100}%).`);
+      }
+    }
+  }, [subject.id, step.id, step.activities.length, step.decodableBook]);
 
   const handleSaveIdentity = (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +97,42 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
     setLearnerName(finalStudent);
     setParentName(finalParent);
     setShowNameModal(false);
+
+    // Reload progress for newly selected learner
+    const saved = getStepProgress(subject.id, step.id, finalStudent);
+    if (saved) {
+      setIsMastered(Boolean(saved.isMastered));
+      setQuizScore(saved.quizScore);
+      setIsQuizSubmitted(saved.quizScore !== null);
+      setActivityIndex(saved.activityIndex || 0);
+      setStoryPage(saved.storyPage || 0);
+      setSelectedActivityOption(null);
+      setActivityFeedback(null);
+      setResumedNotice(`Loaded ${finalStudent}'s progress: Activity ${(saved.activityIndex || 0) + 1}`);
+    } else {
+      setIsMastered(false);
+      setQuizScore(null);
+      setIsQuizSubmitted(false);
+      setActivityIndex(0);
+      setStoryPage(0);
+      setSelectedActivityOption(null);
+      setActivityFeedback(null);
+      setResumedNotice(null);
+    }
+  };
+
+  const handleResetProgress = () => {
+    resetStepProgress(step.id, learnerName);
+    setActivityIndex(0);
+    setSelectedActivityOption(null);
+    setActivityFeedback(null);
+    setQuizAnswers({});
+    setIsQuizSubmitted(false);
+    setQuizScore(null);
+    setIsMastered(false);
+    setStoryPage(0);
+    setActiveTab("activity");
+    setResumedNotice(null);
   };
 
   const currentActivity = step.activities[activityIndex];
@@ -121,12 +185,37 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
 
   const handleNextActivity = () => {
     if (activityIndex < step.activities.length - 1) {
-      setActivityIndex(activityIndex + 1);
+      const nextIdx = activityIndex + 1;
+      setActivityIndex(nextIdx);
       setSelectedActivityOption(null);
       setActivityFeedback(null);
+      saveStepProgress(
+        {
+          subjectId: subject.id,
+          stepId: step.id,
+          activityIndex: nextIdx,
+          totalActivities: step.activities.length,
+          isMastered,
+          quizScore,
+          storyPage,
+        },
+        learnerName
+      );
     } else {
       // Completed all activities, prompt to quiz!
       setActiveTab("quiz");
+      saveStepProgress(
+        {
+          subjectId: subject.id,
+          stepId: step.id,
+          activityIndex: step.activities.length - 1,
+          totalActivities: step.activities.length,
+          isMastered,
+          quizScore,
+          storyPage,
+        },
+        learnerName
+      );
     }
   };
 
@@ -156,6 +245,7 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
     const percent = Math.round((correctCount / step.quiz.length) * 100);
     setQuizScore(percent);
     setIsQuizSubmitted(true);
+    const mastered = percent >= 80;
 
     // Telemetry: Log overall quiz mastery
     trackLearningEvent({
@@ -164,10 +254,10 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
       stepId: step.id,
       title: `${subject.name} Step ${step.stepNumber} Mastery Check`,
       score: percent,
-      isCorrect: percent >= 80,
+      isCorrect: mastered,
     });
 
-    if (percent >= 80) {
+    if (mastered) {
       setIsMastered(true);
       soundFx.playFanfare();
       soundFx.playHooray(subject.id === "isizulu");
@@ -175,6 +265,19 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
     } else {
       soundFx.playRetryBoing();
     }
+
+    saveStepProgress(
+      {
+        subjectId: subject.id,
+        stepId: step.id,
+        activityIndex,
+        totalActivities: step.activities.length,
+        isMastered: mastered || isMastered,
+        quizScore: percent,
+        storyPage,
+      },
+      learnerName
+    );
   };
 
   return (
@@ -251,6 +354,41 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
           />
         </div>
       </div>
+
+      {/* Saved Learner Progress Resume Notice Banner */}
+      {resumedNotice && (
+        <div className="mb-6 p-4 rounded-2xl bg-indigo-50 border-2 border-indigo-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-xs">
+              ⚡
+            </div>
+            <div>
+              <span className="text-[11px] font-black uppercase tracking-wider text-indigo-700 block">
+                Saved Progress Active
+              </span>
+              <p className="text-xs sm:text-sm font-extrabold text-indigo-950">
+                {resumedNotice}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleResetProgress}
+              className="px-3 py-1.5 rounded-xl border border-indigo-300 hover:bg-white text-indigo-900 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Start from Beginning</span>
+            </button>
+            <button
+              onClick={() => setResumedNotice(null)}
+              className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-indigo-100 cursor-pointer"
+              title="Dismiss notice"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Learner Identity Modal */}
       {showNameModal && (
@@ -740,9 +878,24 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
           {/* Page controls */}
           <div className="mt-6 flex items-center justify-between">
             <button
-              onClick={() => setStoryPage((p) => Math.max(0, p - 1))}
+              onClick={() => {
+                const prev = Math.max(0, storyPage - 1);
+                setStoryPage(prev);
+                saveStepProgress(
+                  {
+                    subjectId: subject.id,
+                    stepId: step.id,
+                    activityIndex,
+                    totalActivities: step.activities.length,
+                    isMastered,
+                    quizScore,
+                    storyPage: prev,
+                  },
+                  learnerName
+                );
+              }}
               disabled={storyPage === 0}
-              className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 disabled:opacity-30 cursor-pointer"
+              className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 disabled:opacity-30 cursor-pointer hover:bg-slate-50 transition-colors"
             >
               Previous Page
             </button>
@@ -752,11 +905,24 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
             </span>
 
             <button
-              onClick={() =>
-                setStoryPage((p) => Math.min(step.decodableBook!.pages.length - 1, p + 1))
-              }
+              onClick={() => {
+                const next = Math.min(step.decodableBook!.pages.length - 1, storyPage + 1);
+                setStoryPage(next);
+                saveStepProgress(
+                  {
+                    subjectId: subject.id,
+                    stepId: step.id,
+                    activityIndex,
+                    totalActivities: step.activities.length,
+                    isMastered,
+                    quizScore,
+                    storyPage: next,
+                  },
+                  learnerName
+                );
+              }}
               disabled={storyPage === step.decodableBook.pages.length - 1}
-              className="px-4 py-2 rounded-xl bg-purple-600 text-white text-xs font-bold disabled:opacity-30 cursor-pointer shadow-sm"
+              className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 active:scale-95 text-white text-xs font-bold disabled:opacity-30 cursor-pointer shadow-sm transition-all"
             >
               Next Page
             </button>

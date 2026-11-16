@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Sparkles,
@@ -15,16 +15,31 @@ import {
   X,
   Volume2,
   ShieldCheck,
+  User,
+  Star,
 } from "lucide-react";
 import { SUBJECTS, SKILL_STEPS } from "@/data/curriculumData";
 import { SubjectId } from "@/types/curriculum";
+import { getLearnerIdentity } from "@/utils/analytics";
+import { getLearnerProgress, LearnerProgressMap } from "@/utils/progressManager";
 
 export default function LearnPage() {
   const [selectedSubject, setSelectedSubject] = useState<SubjectId>("english");
   const [showDiagnosticModal, setShowDiagnosticModal] = useState(false);
+  const [studentName, setStudentName] = useState("Guest Learner");
+  const [parentName, setParentName] = useState("");
+  const [progress, setProgress] = useState<LearnerProgressMap>({});
+
+  useEffect(() => {
+    const ident = getLearnerIdentity();
+    setStudentName(ident.studentName);
+    setParentName(ident.parentName);
+    setProgress(getLearnerProgress(ident.studentName));
+  }, []);
 
   const subjectMeta = SUBJECTS[selectedSubject];
   const subjectSteps = SKILL_STEPS.filter((s) => s.subjectId === selectedSubject);
+  const masteredCount = subjectSteps.filter((s) => progress[s.id]?.isMastered).length;
 
   return (
     <div className="flex-1 max-w-6xl w-full mx-auto px-4 py-8 sm:py-12">
@@ -34,9 +49,16 @@ export default function LearnPage() {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-xs text-xs font-black uppercase tracking-wider mb-2">
             <Sparkles className="w-3.5 h-3.5 text-amber-300" />
             <span>Learner Adventure Map</span>
+            {studentName && studentName !== "Guest Learner" && (
+              <span className="bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full text-[10px] font-black lowercase">
+                @{studentName}
+              </span>
+            )}
           </div>
           <h1 className="text-3xl sm:text-4xl font-black tracking-tight">
-            Welcome to Kid Zone! 🚀
+            {studentName && studentName !== "Guest Learner"
+              ? `Welcome back, ${studentName}! 🚀`
+              : "Welcome to Kid Zone! 🚀"}
           </h1>
           <p className="text-sm sm:text-base text-indigo-100 mt-2 font-medium max-w-xl">
             Choose your subject below and climb the skill ladder. Each step gives you stars, badges, and unlocks new challenges!
@@ -104,9 +126,11 @@ export default function LearnPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-600 bg-slate-100 px-4 py-2 rounded-xl">
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-700 bg-amber-50 border border-amber-200 px-4 py-2 rounded-xl shadow-2xs">
             <Award className="w-4 h-4 text-amber-500" />
-            <span>Mastery Progress: 1 of {subjectSteps.length} Steps Unlocked</span>
+            <span>
+              Mastery Progress: <strong className="text-amber-950 font-black">{masteredCount}</strong> of {subjectSteps.length} Steps Mastered ⭐
+            </span>
           </div>
         </div>
 
@@ -114,12 +138,21 @@ export default function LearnPage() {
         <div className="space-y-4">
           {subjectSteps.map((step, idx) => {
             const isUnlocked = !step.isLocked;
+            const stepProg = progress[step.id];
+            const isStepMastered = Boolean(stepProg?.isMastered);
+            const isInProgress = Boolean(
+              stepProg && (stepProg.activityIndex > 0 || stepProg.quizScore !== null) && !isStepMastered
+            );
 
             return (
               <div
                 key={step.id}
                 className={`relative rounded-2xl p-6 border-2 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
-                  isUnlocked
+                  isStepMastered
+                    ? "bg-emerald-50/60 border-emerald-300 hover:border-emerald-500 hover:shadow-md"
+                    : isInProgress
+                    ? "bg-amber-50/60 border-amber-300 hover:border-amber-500 hover:shadow-md"
+                    : isUnlocked
                     ? "bg-slate-50 border-indigo-200 hover:border-indigo-500 hover:shadow-md"
                     : "bg-slate-100/60 border-slate-200 opacity-60"
                 }`}
@@ -127,22 +160,36 @@ export default function LearnPage() {
                 <div className="flex items-start gap-4">
                   <div
                     className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg shrink-0 ${
-                      isUnlocked
+                      isStepMastered
+                        ? "bg-emerald-600 text-white shadow-md"
+                        : isInProgress
+                        ? "bg-amber-500 text-white shadow-md"
+                        : isUnlocked
                         ? "bg-indigo-600 text-white shadow-md"
                         : "bg-slate-300 text-slate-600"
                     }`}
                   >
-                    {step.stepNumber}
+                    {isStepMastered ? "⭐" : step.stepNumber}
                   </div>
 
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="text-lg font-black text-slate-900">
                         {step.title}
                       </h3>
-                      {isUnlocked ? (
-                        <span className="text-[11px] font-black uppercase bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md">
-                          Available
+                      {isStepMastered ? (
+                        <span className="text-[11px] font-black uppercase bg-emerald-100 text-emerald-900 border border-emerald-300 px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>Mastered ({stepProg?.quizScore ?? 100}%)</span>
+                        </span>
+                      ) : isInProgress ? (
+                        <span className="text-[11px] font-black uppercase bg-amber-100 text-amber-900 border border-amber-300 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                          <Zap className="w-3.5 h-3.5 text-amber-600" />
+                          <span>Activity {(stepProg?.activityIndex || 0) + 1} of {stepProg?.totalActivities || step.activities.length}</span>
+                        </span>
+                      ) : isUnlocked ? (
+                        <span className="text-[11px] font-black uppercase bg-indigo-100 text-indigo-800 px-2.5 py-0.5 rounded-full">
+                          Free Trial Unlocked
                         </span>
                       ) : (
                         <span className="text-[11px] font-bold text-slate-500 flex items-center gap-1">
@@ -167,7 +214,23 @@ export default function LearnPage() {
                 </div>
 
                 <div className="sm:shrink-0 flex items-center">
-                  {isUnlocked ? (
+                  {isStepMastered ? (
+                    <Link
+                      href={`/learn/${step.subjectId}/${step.id}`}
+                      className="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm flex items-center justify-center gap-2 shadow-md transition-transform hover:scale-102"
+                    >
+                      <CheckCircle2 className="w-4 h-4 text-emerald-100" />
+                      <span>Review Lesson</span>
+                    </Link>
+                  ) : isInProgress ? (
+                    <Link
+                      href={`/learn/${step.subjectId}/${step.id}`}
+                      className="w-full sm:w-auto px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-amber-950 font-black text-sm flex items-center justify-center gap-2 shadow-md transition-transform hover:scale-102"
+                    >
+                      <Play className="w-4 h-4 fill-amber-950" />
+                      <span>Resume Lesson ▶️</span>
+                    </Link>
+                  ) : isUnlocked ? (
                     <Link
                       href={`/learn/${step.subjectId}/${step.id}`}
                       className="w-full sm:w-auto px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm flex items-center justify-center gap-2 shadow-md transition-transform hover:scale-102"
@@ -176,10 +239,13 @@ export default function LearnPage() {
                       <span>Play Lesson</span>
                     </Link>
                   ) : (
-                    <div className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-200 text-slate-500 font-bold text-xs flex items-center justify-center gap-2 cursor-not-allowed">
-                      <Lock className="w-3.5 h-3.5" />
-                      <span>Complete Step {step.stepNumber - 1} First</span>
-                    </div>
+                    <Link
+                      href="/store"
+                      className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-950 font-bold text-xs flex items-center justify-center gap-2 border border-amber-300 transition-colors"
+                    >
+                      <Lock className="w-3.5 h-3.5 text-amber-800" />
+                      <span>Unlock Step {step.stepNumber}</span>
+                    </Link>
                   )}
                 </div>
               </div>
