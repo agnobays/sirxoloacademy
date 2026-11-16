@@ -131,26 +131,31 @@ export default function VoiceStudioManager() {
         currentAudioRef.current.pause();
       }
 
-      // Explicitly request microphone with noise suppression, echo cancellation, and auto gain control
+      // Explicitly request microphone stream
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
-          echoCancellation: true,
-          noiseSuppression: false, // Prevents aggressive gating of short letter phonemes
+          echoCancellation: false,
+          noiseSuppression: false,
           autoGainControl: true,
         },
       });
 
       audioChunksRef.current = [];
 
-      // Determine best audio mime type supported by this browser
-      let mimeType = "audio/webm";
-      if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
-        mimeType = "audio/webm;codecs=opus";
-      } else if (MediaRecorder.isTypeSupported("audio/mp4")) {
-        mimeType = "audio/mp4";
+      // Determine best audio mime type supported by this browser/phone
+      let mimeType = "";
+      if (typeof MediaRecorder !== "undefined") {
+        if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
+          mimeType = "audio/webm;codecs=opus";
+        } else if (MediaRecorder.isTypeSupported("audio/webm")) {
+          mimeType = "audio/webm";
+        } else if (MediaRecorder.isTypeSupported("audio/mp4")) {
+          mimeType = "audio/mp4";
+        }
       }
 
-      const mediaRecorder = new MediaRecorder(stream, { mimeType });
+      const options = mimeType ? { mimeType } : undefined;
+      const mediaRecorder = new MediaRecorder(stream, options);
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data && event.data.size > 0) {
@@ -159,15 +164,23 @@ export default function VoiceStudioManager() {
       };
 
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, {
-          type: mimeType,
+        const recordedBlob = new Blob(audioChunksRef.current, {
+          type: mediaRecorder.mimeType || "audio/webm",
         });
-        await uploadRecording(soundKey, audioBlob);
+
+        // Immediately create a local Object URL for instant zero-latency playback
+        const localBlobUrl = URL.createObjectURL(recordedBlob);
+        setConfig((prev) => ({
+          ...prev,
+          customRecordings: { ...prev.customRecordings, [soundKey]: localBlobUrl },
+        }));
+
+        await uploadRecording(soundKey, recordedBlob);
         stream.getTracks().forEach((track) => track.stop());
       };
 
       mediaRecorderRef.current = mediaRecorder;
-      mediaRecorder.start(200);
+      mediaRecorder.start(250);
 
       setRecordingKey(soundKey);
       setRecordingSeconds(0);
