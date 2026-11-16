@@ -141,9 +141,43 @@ class AudioEngine {
       .replace(/\//g, " "); // Strip any remaining forward slashes so "slash" is NEVER uttered
   }
 
-  // Speak a standalone phonics sound (e.g. "s" -> "ssss. Like snake!")
-  speakPhoneme(phonemeOrPrompt: string, lang = "en-ZA") {
-    const raw = phonemeOrPrompt.trim().toLowerCase().replace(/\//g, "");
+  // Play authentic recorded letter sound file from Sound City Reading
+  playRecordedPhoneme(letter: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      if (typeof window === "undefined") {
+        resolve(false);
+        return;
+      }
+
+      const clean = letter.trim().toLowerCase().replace(/[^a-z]/g, "");
+      if (!clean || clean.length > 2) {
+        resolve(false);
+        return;
+      }
+
+      const audioPath = `/audio/phonics/${clean}.mp3`;
+      const audio = new Audio(audioPath);
+      audio.onended = () => resolve(true);
+      audio.onerror = () => resolve(false);
+
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => resolve(true)).catch(() => resolve(false));
+      } else {
+        resolve(true);
+      }
+    });
+  }
+
+  // Speak a standalone phonics sound (plays authentic recorded MP3, fallback to TTS)
+  async speakPhoneme(phonemeOrPrompt: string, lang = "en-ZA") {
+    const raw = phonemeOrPrompt.trim().toLowerCase().replace(/[^a-z]/g, "");
+
+    // Try playing authentic recorded audio file first
+    if (raw.length === 1 && /^[a-z]$/.test(raw)) {
+      const played = await this.playRecordedPhoneme(raw);
+      if (played) return;
+    }
 
     const phonemeMap: Record<string, string> = {
       s: "ssss... ssss... like snake!",

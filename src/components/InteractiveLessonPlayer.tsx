@@ -219,12 +219,18 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
 
               <button
                 type="button"
-                onClick={() =>
+                onClick={() => {
+                  const correctOption = currentActivity.options?.find((o) => o.isCorrect);
+                  const targetLetter =
+                    currentActivity.tracingTarget ||
+                    correctOption?.label ||
+                    currentActivity.audioPrompt ||
+                    "s";
                   soundFx.speakPhoneme(
-                    currentActivity.audioPrompt || (currentActivity.correctAnswer as string) || "s",
+                    targetLetter,
                     subject.id === "isizulu" ? "zu-ZA" : "en-ZA"
-                  )
-                }
+                  );
+                }}
                 className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-300 active:scale-95 text-amber-950 font-black text-sm uppercase tracking-wider shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2.5 cursor-pointer"
               >
                 <Volume2 className="w-5 h-5 animate-pulse" />
