@@ -19,7 +19,9 @@ export type ActivityType =
   | "number_counter"
   | "number_bonds"
   | "picture_word_match"
-  | "sentence_builder";
+  | "sentence_builder"
+  | "tracing"
+  | "ten_frame";
 
 export interface ActivityOption {
   id: string;
@@ -36,10 +38,12 @@ export interface LessonActivity {
   prompt: string;
   subPrompt?: string;
   audioPrompt?: string;
-  options: ActivityOption[];
-  correctAnswer: string | string[];
+  options?: ActivityOption[];
+  correctAnswer?: string | string[];
   feedbackSuccess: string;
   feedbackRetry: string;
+  tracingTarget?: string;
+  tenFrameTarget?: number;
 }
 
 export interface QuizQuestion {

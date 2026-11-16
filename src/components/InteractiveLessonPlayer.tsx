@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { SkillStep, SubjectMeta } from "@/types/curriculum";
 import AudioButton from "./AudioButton";
+import TouchTracingCanvas from "./TouchTracingCanvas";
+import TenFrameCounter from "./TenFrameCounter";
 import { soundFx } from "@/utils/audioHelper";
 
 interface Props {
@@ -251,34 +253,63 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
             </p>
           )}
 
-          {/* Interactive Options */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-8">
-            {currentActivity.options.map((option) => {
-              const isSelected = selectedActivityOption === option.id;
-              return (
-                <button
-                  key={option.id}
-                  onClick={() => handleSelectOption(option.id, option.isCorrect)}
-                  className={`relative p-6 sm:p-8 rounded-3xl border-3 text-center transition-all cursor-pointer transform active:scale-95 flex flex-col items-center justify-center min-h-[140px] ${
-                    isSelected
-                      ? option.isCorrect
-                        ? "border-emerald-500 bg-emerald-50 text-emerald-950 shadow-lg scale-102"
-                        : "border-rose-400 bg-rose-50 text-rose-950"
-                      : "border-slate-200 bg-slate-50 hover:bg-white hover:border-indigo-300 text-slate-900 shadow-sm"
-                  }`}
-                >
-                  <span className="text-4xl sm:text-5xl font-black tracking-wide block mb-2">
-                    {option.label}
-                  </span>
-                  {option.sublabel && (
-                    <span className="text-sm font-semibold text-slate-500">
-                      {option.sublabel}
+          {/* Interactive Options or Specialized Widgets */}
+          {currentActivity.type === "tracing" ? (
+            <div className="my-6">
+              <TouchTracingCanvas
+                character={currentActivity.tracingTarget || "s"}
+                guideHint={currentActivity.subPrompt}
+                soundPrompt={currentActivity.audioPrompt}
+                onComplete={() => {
+                  setActivityFeedback({
+                    isSuccess: true,
+                    message: currentActivity.feedbackSuccess,
+                  });
+                }}
+              />
+            </div>
+          ) : currentActivity.type === "ten_frame" ? (
+            <div className="my-6">
+              <TenFrameCounter
+                targetNumber={currentActivity.tenFrameTarget || 5}
+                prompt={currentActivity.prompt}
+                onMastered={() => {
+                  setActivityFeedback({
+                    isSuccess: true,
+                    message: currentActivity.feedbackSuccess,
+                  });
+                }}
+              />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-8">
+              {currentActivity.options?.map((option) => {
+                const isSelected = selectedActivityOption === option.id;
+                return (
+                  <button
+                    key={option.id}
+                    onClick={() => handleSelectOption(option.id, option.isCorrect)}
+                    className={`relative p-6 sm:p-8 rounded-3xl border-3 text-center transition-all cursor-pointer transform active:scale-95 flex flex-col items-center justify-center min-h-[140px] ${
+                      isSelected
+                        ? option.isCorrect
+                          ? "border-emerald-500 bg-emerald-50 text-emerald-950 shadow-lg scale-102"
+                          : "border-rose-400 bg-rose-50 text-rose-950"
+                        : "border-slate-200 bg-slate-50 hover:bg-white hover:border-indigo-300 text-slate-900 shadow-sm"
+                    }`}
+                  >
+                    <span className="text-4xl sm:text-5xl font-black tracking-wide block mb-2">
+                      {option.label}
                     </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+                    {option.sublabel && (
+                      <span className="text-sm font-semibold text-slate-500">
+                        {option.sublabel}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           {/* Feedback banner */}
           {activityFeedback && (

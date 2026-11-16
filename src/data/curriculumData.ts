@@ -78,6 +78,18 @@ export const SKILL_STEPS: SkillStep[] = [
         feedbackSuccess: "Brilliant! /s/ - /a/ - /t/ = SAT! You are reading your first word!",
         feedbackRetry: "Say the sounds slowly: ssss... aaaa... tttt. Blend them together!",
       },
+      {
+        id: "eng-act-trace-s",
+        type: "tracing",
+        prompt: "Finger Tracing: Letter 's'",
+        subPrompt: "Use your finger or mouse to trace the letter 's' along the guide lines!",
+        audioPrompt: "/s/ like snake! Trace the letter s.",
+        tracingTarget: "s",
+        options: [],
+        correctAnswer: "s",
+        feedbackSuccess: "Wonderful handwriting! You traced the letter 's' beautifully! ⭐",
+        feedbackRetry: "Try tracing the curve of the letter s one more time!",
+      },
     ],
     quiz: [
       {
@@ -178,6 +190,17 @@ export const SKILL_STEPS: SkillStep[] = [
         feedbackSuccess: "Superstar! You saw 3 apples right away!",
         feedbackRetry: "Try grouping them in your eyes: two together and one more makes 3!",
       },
+      {
+        id: "math-act-ten-frame",
+        type: "ten_frame",
+        prompt: "Tap the boxes to place 4 counters into the ten-frame!",
+        subPrompt: "Notice how 4 counters leaves 6 empty boxes to make 10!",
+        tenFrameTarget: 4,
+        options: [],
+        correctAnswer: "4",
+        feedbackSuccess: "Brilliant! You placed 4 counters! 4 + 6 = 10! ⭐",
+        feedbackRetry: "Tap boxes to add or remove counters until you have exactly 4!",
+      },
     ],
     quiz: [
       {
@@ -229,6 +252,18 @@ export const SKILL_STEPS: SkillStep[] = [
         correctAnswer: "opt-a",
         feedbackSuccess: "Yebo! Kuhle kakhulu! Inhlamvu ngu-'A'!",
         feedbackRetry: "Lalela futhi: Umsindo /a/ uqala igama elithi amaqanda.",
+      },
+      {
+        id: "zulu-act-trace-a",
+        type: "tracing",
+        prompt: "Bhala onkamisa 'A' ngomunwe wakho!",
+        subPrompt: "Trace the uppercase vowel 'A' along the lines!",
+        audioPrompt: "Umsindo othi /a/. Bhala onkamisa A.",
+        tracingTarget: "A",
+        options: [],
+        correctAnswer: "A",
+        feedbackSuccess: "Ngiyakubongela! Ubhale onkamisa 'A' kahle kakhulu! ⭐",
+        feedbackRetry: "Zama futhi! Landela imigqa yokubhala.",
       },
     ],
     quiz: [
