@@ -5,11 +5,10 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Limit build workers for CloudLinux shared hosting thread limits
   experimental: {
     cpus: 1,
-    workerThreads: false,
   },
+  turbopack: {},
   webpack: (config) => {
     config.resolve = config.resolve || {};
     config.resolve.alias = config.resolve.alias || {};

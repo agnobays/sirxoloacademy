@@ -80,11 +80,11 @@ export default function ParentRegistrationForm() {
 
   if (submitted) {
     return (
-      <div className="bg-white rounded-3xl p-8 sm:p-12 border-2 border-emerald-400 shadow-2xl text-center max-w-xl mx-auto">
-        <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
-          <CheckCircle2 className="w-10 h-10" />
+      <div className="bg-white rounded-3xl p-6 sm:p-12 border-2 border-emerald-400 shadow-2xl text-center max-w-xl mx-auto">
+        <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+          <CheckCircle2 className="w-8 h-8 sm:w-10 sm:h-10" />
         </div>
-        <span className="text-xs font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">
+        <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">
           Registration Confirmed
         </span>
         <h3 className="text-2xl sm:text-3xl font-black text-slate-900 mt-3">
@@ -115,7 +115,7 @@ export default function ParentRegistrationForm() {
             setPhone("");
             setChildName("");
           }}
-          className="mt-8 px-6 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs cursor-pointer transition-colors"
+          className="mt-6 w-full sm:w-auto px-6 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs cursor-pointer transition-colors"
         >
           Register Another Learner
         </button>
@@ -124,9 +124,9 @@ export default function ParentRegistrationForm() {
   }
 
   return (
-    <div className="bg-white rounded-3xl p-6 sm:p-10 border-2 border-indigo-100 shadow-2xl max-w-2xl mx-auto">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-black mb-3">
+    <div className="bg-white rounded-3xl p-5 sm:p-10 border-2 border-indigo-100 shadow-2xl max-w-2xl mx-auto">
+      <div className="text-center mb-6 sm:mb-8">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-black mb-2.5">
           <Sparkles className="w-3.5 h-3.5 text-amber-600" />
           <span>Priority Parent Waitlist</span>
         </div>
@@ -140,15 +140,15 @@ export default function ParentRegistrationForm() {
       </div>
 
       {errorMsg && (
-        <div className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold">
+        <div className="mb-5 p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold">
           {errorMsg}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
         {/* Parent Name */}
         <div>
-          <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
+          <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1 flex items-center gap-1.5">
             <User className="w-3.5 h-3.5 text-indigo-600" />
             <span>Parent / Guardian Name *</span>
           </label>
@@ -158,14 +158,14 @@ export default function ParentRegistrationForm() {
             placeholder="e.g. Nandi Khumalo"
             value={parentName}
             onChange={(e) => setParentName(e.target.value)}
-            className="w-full p-3.5 rounded-2xl border-2 border-slate-200 text-slate-900 font-semibold text-sm focus:border-indigo-600 focus:outline-hidden transition-colors"
+            className="w-full p-3 sm:p-3.5 rounded-xl sm:rounded-2xl border-2 border-slate-200 text-slate-900 font-semibold text-sm focus:border-indigo-600 focus:outline-hidden transition-colors"
           />
         </div>
 
         {/* Email & Phone */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div>
-            <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
+            <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1 flex items-center gap-1.5">
               <Mail className="w-3.5 h-3.5 text-indigo-600" />
               <span>Email Address *</span>
             </label>
@@ -175,12 +175,12 @@ export default function ParentRegistrationForm() {
               placeholder="nandi@example.co.za"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3.5 rounded-2xl border-2 border-slate-200 text-slate-900 font-semibold text-sm focus:border-indigo-600 focus:outline-hidden transition-colors"
+              className="w-full p-3 sm:p-3.5 rounded-xl sm:rounded-2xl border-2 border-slate-200 text-slate-900 font-semibold text-sm focus:border-indigo-600 focus:outline-hidden transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
+            <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1 flex items-center gap-1.5">
               <Phone className="w-3.5 h-3.5 text-indigo-600" />
               <span>WhatsApp / Phone Number *</span>
             </label>
@@ -190,17 +190,17 @@ export default function ParentRegistrationForm() {
               placeholder="e.g. 082 123 4567"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="w-full p-3.5 rounded-2xl border-2 border-slate-200 text-slate-900 font-semibold text-sm focus:border-indigo-600 focus:outline-hidden transition-colors"
+              className="w-full p-3 sm:p-3.5 rounded-xl sm:rounded-2xl border-2 border-slate-200 text-slate-900 font-semibold text-sm focus:border-indigo-600 focus:outline-hidden transition-colors"
             />
           </div>
         </div>
 
         {/* Child Information */}
-        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3 sm:space-y-4">
           <span className="text-xs font-black text-slate-800 uppercase tracking-wide block">
             Learner Information
           </span>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="sm:col-span-2">
               <label className="block text-xs font-bold text-slate-600 mb-1">
                 Child’s First Name
@@ -210,7 +210,7 @@ export default function ParentRegistrationForm() {
                 placeholder="e.g. Sipho"
                 value={childName}
                 onChange={(e) => setChildName(e.target.value)}
-                className="w-full p-3 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold text-sm focus:border-indigo-600 focus:outline-hidden"
+                className="w-full p-2.5 sm:p-3 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold text-sm focus:border-indigo-600 focus:outline-hidden"
               />
             </div>
 
@@ -221,7 +221,7 @@ export default function ParentRegistrationForm() {
               <select
                 value={childAge}
                 onChange={(e) => setChildAge(e.target.value)}
-                className="w-full p-3 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold text-sm focus:border-indigo-600 focus:outline-hidden"
+                className="w-full p-2.5 sm:p-3 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold text-sm focus:border-indigo-600 focus:outline-hidden"
               >
                 <option value="4">4 Years (Grade R Prep)</option>
                 <option value="5">5 Years (Grade R)</option>
@@ -236,10 +236,10 @@ export default function ParentRegistrationForm() {
 
         {/* Subjects of Interest */}
         <div>
-          <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-2">
+          <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1.5">
             Which subjects are you most interested in?
           </label>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {[
               { id: "english", label: "English Phonics & Reading", icon: "🔤" },
               { id: "mathematics", label: "Foundation Mathematics", icon: "🔢" },
@@ -251,14 +251,14 @@ export default function ParentRegistrationForm() {
                   type="button"
                   key={sub.id}
                   onClick={() => toggleSubject(sub.id)}
-                  className={`p-3 rounded-2xl border-2 text-left transition-all cursor-pointer flex items-center gap-2.5 ${
+                  className={`p-3 rounded-xl sm:rounded-2xl border-2 text-left transition-all cursor-pointer flex items-center gap-2.5 ${
                     isChecked
                       ? "border-indigo-600 bg-indigo-50/70 text-indigo-950 font-black shadow-xs"
                       : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 font-semibold"
                   }`}
                 >
                   <span className="text-lg">{sub.icon}</span>
-                  <span className="text-xs">{sub.label}</span>
+                  <span className="text-xs leading-snug">{sub.label}</span>
                 </button>
               );
             })}
@@ -266,19 +266,19 @@ export default function ParentRegistrationForm() {
         </div>
 
         {/* Workbook Checkbox */}
-        <div className="pt-1">
-          <label className="flex items-start gap-3 p-3.5 rounded-2xl border border-slate-200 bg-amber-50/50 cursor-pointer">
+        <div>
+          <label className="flex items-start gap-2.5 p-3 rounded-xl sm:rounded-2xl border border-slate-200 bg-amber-50/50 cursor-pointer">
             <input
               type="checkbox"
               checked={workbookInterest}
               onChange={(e) => setWorkbookInterest(e.target.checked)}
-              className="mt-0.5 w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500"
+              className="mt-0.5 w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 shrink-0"
             />
             <div className="text-xs">
-              <span className="font-bold text-slate-900 block">
+              <span className="font-bold text-slate-900 block leading-tight">
                 Interested in Physical Workbooks & Storybooks?
               </span>
-              <span className="text-slate-600">
+              <span className="text-slate-600 text-[11px] mt-0.5 block">
                 We can notify you when printed books & storybooks are ready to be delivered to your door.
               </span>
             </div>
@@ -289,7 +289,7 @@ export default function ParentRegistrationForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-600 hover:from-indigo-700 hover:to-purple-700 active:scale-98 text-white font-black text-sm uppercase tracking-wider shadow-lg shadow-indigo-200 transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+          className="w-full py-3.5 sm:py-4 rounded-xl sm:rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-600 hover:from-indigo-700 hover:to-purple-700 active:scale-98 text-white font-black text-xs sm:text-sm uppercase tracking-wider shadow-lg shadow-indigo-200 transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
         >
           {loading ? (
             <>
@@ -304,8 +304,8 @@ export default function ParentRegistrationForm() {
           )}
         </button>
 
-        <p className="text-[11px] text-center text-slate-400 flex items-center justify-center gap-1.5">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+        <p className="text-[10px] sm:text-[11px] text-center text-slate-400 flex items-center justify-center gap-1.5">
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
           <span>Your information is strictly protected and will only be used for Sir Xolo Academy updates.</span>
         </p>
       </form>
