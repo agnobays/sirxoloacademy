@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, Fragment } from "react";
+import React, { useState, useEffect, Fragment } from "react";
 import Link from "next/link";
 import { triggerFullScreenConfetti } from "@/utils/confettiHelper";
 import {
@@ -20,6 +20,7 @@ import VectorRailTracing from "./VectorRailTracing";
 import TenFrameCounter from "./TenFrameCounter";
 import FreeTrialShowcase from "./FreeTrialShowcase";
 import { soundFx } from "@/utils/audioHelper";
+import { trackLearningEvent } from "@/utils/analytics";
 
 interface Props {
   step: SkillStep;
@@ -44,8 +45,30 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
 
   const currentActivity = step.activities[activityIndex];
 
+  // Telemetry: Log lesson start once per session
+  useEffect(() => {
+    trackLearningEvent({
+      eventType: "lesson_start",
+      subject: subject.id,
+      stepId: step.id,
+      title: `${subject.name} • Step ${step.stepNumber}: ${step.title}`,
+    });
+  }, [subject.id, subject.name, step.id, step.stepNumber, step.title]);
+
   const handleSelectOption = (optionId: string, isCorrect?: boolean) => {
     setSelectedActivityOption(optionId);
+
+    // Telemetry: Track student attempt & stuck friction point
+    const chosenLabel = currentActivity?.options?.find((o) => o.id === optionId)?.label || optionId;
+    trackLearningEvent({
+      eventType: "activity_attempt",
+      subject: subject.id,
+      stepId: step.id,
+      targetId: currentActivity?.id || "activity",
+      title: currentActivity?.prompt || "Activity Challenge",
+      isCorrect: Boolean(isCorrect),
+      chosenOption: chosenLabel,
+    });
 
     if (isCorrect) {
       setTimeout(() => {
@@ -86,14 +109,35 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
   const handleSubmitQuiz = () => {
     let correctCount = 0;
     step.quiz.forEach((q, idx) => {
-      if (quizAnswers[idx] === q.correctIndex) {
+      const isAnsCorrect = quizAnswers[idx] === q.correctIndex;
+      if (isAnsCorrect) {
         correctCount += 1;
       }
+      // Telemetry: Log per-question attempt to identify specific stuck questions
+      trackLearningEvent({
+        eventType: "quiz_attempt",
+        subject: subject.id,
+        stepId: step.id,
+        targetId: q.id,
+        title: q.prompt,
+        isCorrect: isAnsCorrect,
+        chosenOption: q.options[quizAnswers[idx]] || "Unanswered",
+      });
     });
 
     const percent = Math.round((correctCount / step.quiz.length) * 100);
     setQuizScore(percent);
     setIsQuizSubmitted(true);
+
+    // Telemetry: Log overall quiz mastery
+    trackLearningEvent({
+      eventType: "quiz_completed",
+      subject: subject.id,
+      stepId: step.id,
+      title: `${subject.name} Step ${step.stepNumber} Mastery Check`,
+      score: percent,
+      isCorrect: percent >= 80,
+    });
 
     if (percent >= 80) {
       setIsMastered(true);

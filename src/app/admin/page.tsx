@@ -16,10 +16,14 @@ import {
   KeyRound,
   LogOut,
   Sparkles,
+  BarChart3,
+  Users,
 } from "lucide-react";
 import { SUBJECTS, SKILL_STEPS } from "@/data/curriculumData";
 import { SubjectId } from "@/types/curriculum";
 import VoiceStudioManager from "@/components/VoiceStudioManager";
+import AdminAnalyticsDashboard from "@/components/AdminAnalyticsDashboard";
+import AdminLeadsManager from "@/components/AdminLeadsManager";
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -27,7 +31,9 @@ export default function AdminPage() {
   const [authError, setAuthError] = useState("");
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
-  const [activeTab, setActiveTab] = useState<"voice_studio" | "lessons" | "questions" | "storybooks" | "store">("voice_studio");
+  const [activeTab, setActiveTab] = useState<
+    "analytics" | "leads" | "voice_studio" | "lessons" | "questions" | "storybooks" | "store"
+  >("analytics");
   const [selectedSubject, setSelectedSubject] = useState<SubjectId>("english");
   const [videoUrl, setVideoUrl] = useState("");
   const [lessonTitle, setLessonTitle] = useState("");
@@ -173,6 +179,8 @@ export default function AdminPage() {
       {/* Tabs */}
       <div className="flex items-center gap-2 mb-8 border-b border-slate-200 pb-4 overflow-x-auto">
         {[
+          { id: "analytics", label: "📊 Learner Stats & Stuck Points", icon: BarChart3 },
+          { id: "leads", label: "👥 Parent Leads & CRM", icon: Users },
           { id: "voice_studio", label: "🎙️ Mr. Xolo Voice Studio", icon: Mic },
           { id: "lessons", label: "Video Lessons & Steps", icon: Video },
           { id: "questions", label: "Interactive Questions", icon: FileQuestion },
@@ -184,7 +192,7 @@ export default function AdminPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === tab.id
                   ? "bg-indigo-600 text-white shadow-sm"
                   : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
@@ -197,7 +205,17 @@ export default function AdminPage() {
         })}
       </div>
 
-      {/* TAB 0: MR. XOLO VOICE STUDIO */}
+      {/* TAB: LEARNER ANALYTICS & STUCK POINTS */}
+      {activeTab === "analytics" && (
+        <AdminAnalyticsDashboard />
+      )}
+
+      {/* TAB: PARENT LEADS CRM */}
+      {activeTab === "leads" && (
+        <AdminLeadsManager />
+      )}
+
+      {/* TAB: MR. XOLO VOICE STUDIO */}
       {activeTab === "voice_studio" && (
         <VoiceStudioManager />
       )}
