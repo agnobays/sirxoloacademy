@@ -131,31 +131,43 @@ export default function VoiceStudioManager() {
         currentAudioRef.current.pause();
       }
 
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      audioChunksRef.current = [];
-
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: MediaRecorder.isTypeSupported("audio/webm")
-          ? "audio/webm"
-          : "audio/mp4",
+      // Explicitly request microphone with noise suppression, echo cancellation, and auto gain control
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: false, // Prevents aggressive gating of short letter phonemes
+          autoGainControl: true,
+        },
       });
 
+      audioChunksRef.current = [];
+
+      // Determine best audio mime type supported by this browser
+      let mimeType = "audio/webm";
+      if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
+        mimeType = "audio/webm;codecs=opus";
+      } else if (MediaRecorder.isTypeSupported("audio/mp4")) {
+        mimeType = "audio/mp4";
+      }
+
+      const mediaRecorder = new MediaRecorder(stream, { mimeType });
+
       mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
+        if (event.data && event.data.size > 0) {
           audioChunksRef.current.push(event.data);
         }
       };
 
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, {
-          type: mediaRecorder.mimeType,
+          type: mimeType,
         });
         await uploadRecording(soundKey, audioBlob);
         stream.getTracks().forEach((track) => track.stop());
       };
 
       mediaRecorderRef.current = mediaRecorder;
-      mediaRecorder.start(100);
+      mediaRecorder.start(200);
 
       setRecordingKey(soundKey);
       setRecordingSeconds(0);
@@ -164,8 +176,9 @@ export default function VoiceStudioManager() {
       timerIntervalRef.current = setInterval(() => {
         setRecordingSeconds((prev) => prev + 1);
       }, 1000);
-    } catch {
-      alert("Microphone access is required to record your voice. Please allow microphone permissions in your browser.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      alert(`Microphone error: ${msg}. Please ensure your browser has microphone permission enabled.`);
     }
   };
 
