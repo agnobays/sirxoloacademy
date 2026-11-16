@@ -84,12 +84,91 @@ class AudioEngine {
     });
   }
 
+  // Cheerful audio cheer on correct answer ("Hooray!", "Halala!")
+  playHooray(isZulu = false) {
+    const englishPraise = [
+      "Hooray! Well done!",
+      "Hooray! You got it right!",
+      "Superstar! That is correct!",
+      "Hooray! Brilliant job!",
+    ];
+    const zuluPraise = [
+      "Halala! Kuhle kakhulu!",
+      "Yebo! Uqinisile!",
+      "Halala! Ngiyakubongela!",
+    ];
+
+    const list = isZulu ? zuluPraise : englishPraise;
+    const praise = list[Math.floor(Math.random() * list.length)];
+
+    // Allow the chime to ring first, then speak cheer
+    setTimeout(() => {
+      this.speakText(praise, isZulu ? "zu-ZA" : "en-ZA");
+    }, 280);
+  }
+
+  // Convert linguistic phonics notation (e.g. /s/) to child-friendly natural sounds so TTS never reads "slash"
+  cleanPhonetics(text: string): string {
+    return text
+      .replace(/\/s\//gi, " ssss ")
+      .replace(/\/a\//gi, " ah ")
+      .replace(/\/t\//gi, " tuh ")
+      .replace(/\/p\//gi, " puh ")
+      .replace(/\/i\//gi, " ih ")
+      .replace(/\/n\//gi, " nnnn ")
+      .replace(/\/m\//gi, " mmmm ")
+      .replace(/\/d\//gi, " duh ")
+      .replace(/\/g\//gi, " guh ")
+      .replace(/\/o\//gi, " aw ")
+      .replace(/\/c\//gi, " kuh ")
+      .replace(/\/k\//gi, " kuh ")
+      .replace(/\/e\//gi, " eh ")
+      .replace(/\/u\//gi, " uh ")
+      .replace(/\/r\//gi, " rrr ")
+      .replace(/\/h\//gi, " huh ")
+      .replace(/\/b\//gi, " buh ")
+      .replace(/\/f\//gi, " fff ")
+      .replace(/\/l\//gi, " lll ")
+      .replace(/\/j\//gi, " juh ")
+      .replace(/\/v\//gi, " vvv ")
+      .replace(/\/w\//gi, " wuh ")
+      .replace(/\/x\//gi, " ks ")
+      .replace(/\/y\//gi, " yuh ")
+      .replace(/\/z\//gi, " zzz ")
+      .replace(/\/sh\//gi, " shhh ")
+      .replace(/\/ch\//gi, " ch ")
+      .replace(/\/th\//gi, " th ")
+      .replace(/\//g, " "); // Strip any remaining forward slashes so "slash" is NEVER uttered
+  }
+
+  // Speak a standalone phonics sound (e.g. "s" -> "ssss. Like snake!")
+  speakPhoneme(phonemeOrPrompt: string, lang = "en-ZA") {
+    const raw = phonemeOrPrompt.trim().toLowerCase().replace(/\//g, "");
+
+    const phonemeMap: Record<string, string> = {
+      s: "ssss... ssss... like snake!",
+      a: "ah... ah... like apple!",
+      t: "tuh... tuh... like tiger!",
+      p: "puh... puh... like penguin!",
+      i: "ih... ih... like igloo!",
+      n: "nnnn... nnnn... like nest!",
+      m: "mmmm... mmmm... like monkey!",
+      d: "duh... duh... like dolphin!",
+      opt_s: "ssss... ssss... like snake!",
+      "opt-s": "ssss... ssss... like snake!",
+    };
+
+    const phoneticSpeech = phonemeMap[raw] || this.cleanPhonetics(phonemeOrPrompt);
+    this.speakText(phoneticSpeech, lang);
+  }
+
   // Speak prompt or phonetic sound
   speakText(text: string, lang = "en-ZA") {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(text);
+    const cleanedText = this.cleanPhonetics(text);
+    const utterance = new SpeechSynthesisUtterance(cleanedText);
     utterance.lang = lang;
     utterance.rate = 0.88; // Slower cadence for foundation learners
     utterance.pitch = 1.1; // Cheerful tone

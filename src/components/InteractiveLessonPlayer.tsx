@@ -48,12 +48,14 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
     setSelectedActivityOption(optionId);
     if (isCorrect) {
       soundFx.playSuccessChime();
+      soundFx.playHooray(subject.id === "isizulu");
       setActivityFeedback({
         isSuccess: true,
         message: currentActivity.feedbackSuccess,
       });
     } else {
       soundFx.playRetryBoing();
+      soundFx.speakText("Oops! Try again!");
       setActivityFeedback({
         isSuccess: false,
         message: currentActivity.feedbackRetry,
@@ -91,6 +93,7 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
     if (percent >= 80) {
       setIsMastered(true);
       soundFx.playFanfare();
+      soundFx.playHooray(subject.id === "isizulu");
       confetti({
         particleCount: 120,
         spread: 80,
@@ -251,6 +254,39 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
             <p className="text-slate-600 text-sm sm:text-base mb-6">
               {currentActivity.subPrompt}
             </p>
+          )}
+
+          {/* Prominent Phonics Sound Player for Sound Matching & Letter Recognition */}
+          {(currentActivity.audioPrompt || currentActivity.type === "sound_matching") && (
+            <div className="my-6 p-5 sm:p-6 rounded-3xl bg-amber-50 border-3 border-amber-300 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+              <div className="flex items-center gap-3.5 text-center sm:text-left">
+                <div className="w-12 h-12 rounded-2xl bg-amber-400 text-amber-950 flex items-center justify-center font-black text-2xl shadow-sm shrink-0">
+                  🔊
+                </div>
+                <div>
+                  <span className="text-[11px] font-black uppercase tracking-wider text-amber-800 block">
+                    Phonics Sound Player
+                  </span>
+                  <p className="text-sm sm:text-base font-black text-slate-900">
+                    {currentActivity.subPrompt || "Tap the sound button to listen!"}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  soundFx.speakPhoneme(
+                    currentActivity.audioPrompt || (currentActivity.correctAnswer as string) || "s",
+                    subject.id === "isizulu" ? "zu-ZA" : "en-ZA"
+                  )
+                }
+                className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-300 active:scale-95 text-amber-950 font-black text-sm uppercase tracking-wider shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2.5 cursor-pointer"
+              >
+                <Volume2 className="w-5 h-5 animate-pulse" />
+                <span>Play Sound</span>
+              </button>
+            </div>
           )}
 
           {/* Interactive Options or Specialized Widgets */}
