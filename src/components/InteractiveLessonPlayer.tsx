@@ -45,17 +45,27 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
 
   const handleSelectOption = (optionId: string, isCorrect?: boolean) => {
     setSelectedActivityOption(optionId);
+    const chosenOption = currentActivity.options?.find((o) => o.id === optionId);
+
+    // Play recorded phoneme sound if option is a letter
+    if (chosenOption?.label && chosenOption.label.length === 1 && /^[a-zA-Z]$/.test(chosenOption.label)) {
+      soundFx.playRecordedPhoneme(chosenOption.label);
+    }
+
     if (isCorrect) {
-      soundFx.playSuccessChime();
-      soundFx.playHooray(subject.id === "isizulu");
-      triggerFullScreenConfetti();
+      setTimeout(() => {
+        soundFx.playSuccessChime();
+        soundFx.playHooray(subject.id === "isizulu");
+        triggerFullScreenConfetti();
+      }, 350);
       setActivityFeedback({
         isSuccess: true,
         message: currentActivity.feedbackSuccess,
       });
     } else {
-      soundFx.playRetryBoing();
-      soundFx.speakText("Oops! Try again!");
+      setTimeout(() => {
+        soundFx.playRetryBoing();
+      }, 400);
       setActivityFeedback({
         isSuccess: false,
         message: currentActivity.feedbackRetry,
@@ -182,7 +192,13 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
               Activity {activityIndex + 1} of {step.activities.length}
             </span>
             <AudioButton
-              textToSpeak={`${currentActivity.prompt}. ${currentActivity.subPrompt || ""}`}
+              textToSpeak={currentActivity.prompt}
+              targetLetter={
+                currentActivity.tracingTarget ||
+                currentActivity.options?.find((o) => o.isCorrect)?.label ||
+                currentActivity.audioPrompt ||
+                "s"
+              }
               label="Hear Question"
               size="sm"
             />

@@ -5,6 +5,7 @@ import { soundFx } from "@/utils/audioHelper";
 
 interface AudioButtonProps {
   textToSpeak: string;
+  targetLetter?: string;
   label?: string;
   lang?: string;
   className?: string;
@@ -13,13 +14,14 @@ interface AudioButtonProps {
 
 export default function AudioButton({
   textToSpeak,
+  targetLetter,
   label = "Listen",
   lang = "en-ZA",
   className = "",
   size = "md",
 }: AudioButtonProps) {
   const handlePlay = () => {
-    soundFx.speakText(textToSpeak, lang);
+    soundFx.speakQuestion(textToSpeak, targetLetter, lang);
   };
 
   const sizeClasses = {

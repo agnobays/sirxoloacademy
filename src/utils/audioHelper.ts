@@ -142,6 +142,47 @@ class AudioEngine {
       .replace(/\//g, " "); // Strip any remaining forward slashes so "slash" is NEVER uttered
   }
 
+  // Speak question prompt and seamlessly chain the real recorded phoneme audio
+  speakQuestion(promptText: string, targetLetter?: string, lang = "en-ZA") {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+
+    // Auto-extract letter if not provided
+    let letterToPlay = targetLetter;
+    if (!letterToPlay) {
+      const match = promptText.match(/\/([a-z])\//i) || promptText.match(/letter\s+['"]?([a-z])['"]?/i);
+      if (match) {
+        letterToPlay = match[1];
+      }
+    }
+
+    // Replace phonetic slash notations with "this sound" in spoken sentences so TTS never says "slash" or "s s s"
+    const cleanSpoken = promptText
+      .replace(/\/([a-z])\//gi, "this sound")
+      .replace(/\//g, " ");
+
+    const utterance = new SpeechSynthesisUtterance(cleanSpoken);
+    utterance.lang = lang;
+    utterance.rate = 0.88;
+    utterance.pitch = 1.05;
+
+    const voices = window.speechSynthesis.getVoices();
+    const preferredVoice = voices.find((v) => v.lang.includes("en-ZA") || v.lang.includes("en-GB"));
+    if (preferredVoice) {
+      utterance.voice = preferredVoice;
+    }
+
+    if (letterToPlay) {
+      utterance.onend = () => {
+        setTimeout(() => {
+          this.playRecordedPhoneme(letterToPlay!);
+        }, 180);
+      };
+    }
+
+    window.speechSynthesis.speak(utterance);
+  }
+
   // Play authentic recorded letter sound file from Sound City Reading
   playRecordedPhoneme(letter: string): Promise<boolean> {
     return new Promise((resolve) => {

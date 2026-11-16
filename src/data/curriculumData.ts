@@ -51,8 +51,8 @@ export const SKILL_STEPS: SkillStep[] = [
         id: "eng-act-1",
         type: "sound_matching",
         prompt: "Listen to the sound and choose the letter that makes this sound:",
-        subPrompt: "Click the sound button to hear /s/",
-        audioPrompt: "/s/ like snake!",
+        subPrompt: "Click the sound button to hear the sound",
+        audioPrompt: "s",
         options: [
           { id: "opt-s", label: "s", sublabel: "snake", isCorrect: true },
           { id: "opt-t", label: "t", sublabel: "tiger", isCorrect: false },
