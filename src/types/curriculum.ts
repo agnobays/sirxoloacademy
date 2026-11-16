@@ -80,8 +80,8 @@ export interface SkillStep {
   title: string;
   subtitle: string;
   description: string;
-  videoUrl: string;
-  videoDuration: string;
+  videoUrl?: string;
+  videoDuration?: string;
   focusSkills: string[];
   activities: LessonActivity[];
   quiz: QuizQuestion[];

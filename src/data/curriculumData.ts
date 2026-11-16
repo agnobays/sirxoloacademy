@@ -45,8 +45,6 @@ export const SKILL_STEPS: SkillStep[] = [
     title: "Letter Sounds & Blending Basics",
     subtitle: "Mastering /s/, /a/, /t/, and /p/",
     description: "Join Sir Xolo as we discover the first four building-block sounds and blend them to make real words!",
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", // Embed placeholder ready for Sir Xolo's videos
-    videoDuration: "4:30 min",
     focusSkills: ["Sound recognition", "Initial phoneme identification", "Ear training"],
     activities: [
       {
@@ -142,8 +140,6 @@ export const SKILL_STEPS: SkillStep[] = [
     title: "CVC Words & Short Vowels",
     subtitle: "Exploring /i/, /n/, /m/, and /d/",
     description: "Expand your vocabulary! Learn to read words like pin, pan, map, and sit.",
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    videoDuration: "5:15 min",
     focusSkills: ["Short vowel /i/", "Consonant blending", "Word families"],
     activities: [],
     quiz: [],
@@ -156,8 +152,6 @@ export const SKILL_STEPS: SkillStep[] = [
     title: "Digraphs & First Story Reader",
     subtitle: "Discovering /sh/, /ch/, /th/",
     description: "Unlock special sound combinations and read complete decodable paragraphs.",
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    videoDuration: "6:00 min",
     focusSkills: ["Digraph recognition", "Fluency", "Comprehension"],
     activities: [],
     quiz: [],
@@ -172,8 +166,6 @@ export const SKILL_STEPS: SkillStep[] = [
     title: "Subitizing & Number Quantities 1 to 5",
     subtitle: "Seeing Numbers Instantly Without Counting",
     description: "Train your brain to recognize groups of 1, 2, 3, 4, and 5 dots instantly like a dice pattern!",
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    videoDuration: "4:00 min",
     focusSkills: ["Visual subitizing", "Quantity estimation", "Dot pattern recognition"],
     activities: [
       {
@@ -219,8 +211,6 @@ export const SKILL_STEPS: SkillStep[] = [
     title: "Number Bonds to 5",
     subtitle: "Friends of 5 (3 + 2, 4 + 1)",
     description: "Explore all the magical pairs of numbers that hold hands to make 5.",
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    videoDuration: "4:45 min",
     focusSkills: ["Part-part-whole", "Number bonds", "Addition readiness"],
     activities: [],
     quiz: [],
@@ -235,8 +225,6 @@ export const SKILL_STEPS: SkillStep[] = [
     title: "Onkamisa (The 5 Vowels)",
     subtitle: "Umsindo: A - E - I - O - U",
     description: "Funda onkamisa abahlanu besiZulu nomfundisi uSir Xolo ngokucula nokulalela imisindo.",
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    videoDuration: "5:00 min",
     focusSkills: ["Onkamisa ukuphimisa", "Umsindo wokuqala", "Ukuqonda amagama"],
     activities: [
       {
@@ -302,8 +290,6 @@ export const SKILL_STEPS: SkillStep[] = [
     title: "Izakhi Zamagama (Ba, Be, Bi, Bo, Bu)",
     subtitle: "Ukwakha Izinhlamvu zokuqala",
     description: "Hlanganisa ongwaqa nonkamisa ukwakha izakhi zamagama zokuqala.",
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    videoDuration: "5:30 min",
     focusSkills: ["Izakhi zamagama", "Ukuhlanganisa imisindo", "Ulimi lwasekhaya"],
     activities: [],
     quiz: [],

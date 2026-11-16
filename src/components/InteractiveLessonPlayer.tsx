@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import confetti from "canvas-confetti";
 import {
-  Play,
   CheckCircle2,
   HelpCircle,
   BookOpen,
@@ -28,7 +27,7 @@ interface Props {
 }
 
 export default function InteractiveLessonPlayer({ step, subject, nextStep }: Props) {
-  const [activeTab, setActiveTab] = useState<"video" | "activity" | "quiz" | "storybook">("video");
+  const [activeTab, setActiveTab] = useState<"activity" | "quiz" | "storybook">("activity");
   const [activityIndex, setActivityIndex] = useState(0);
   const [selectedActivityOption, setSelectedActivityOption] = useState<string | null>(null);
   const [activityFeedback, setActivityFeedback] = useState<{ isSuccess: boolean; message: string } | null>(null);
@@ -138,19 +137,7 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
       </div>
 
       {/* Mode Navigation Tabs */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-1.5 bg-slate-200 rounded-2xl mb-8">
-        <button
-          onClick={() => setActiveTab("video")}
-          className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold transition-all ${
-            activeTab === "video"
-              ? "bg-white text-indigo-700 shadow-sm"
-              : "text-slate-600 hover:text-slate-900"
-          }`}
-        >
-          <Play className="w-4 h-4 text-indigo-600 fill-indigo-600" />
-          <span>1. Watch Video</span>
-        </button>
-
+      <div className={`grid ${step.decodableBook ? "grid-cols-3" : "grid-cols-2"} gap-2 p-1.5 bg-slate-200 rounded-2xl mb-8`}>
         <button
           onClick={() => setActiveTab("activity")}
           className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold transition-all ${
@@ -160,7 +147,7 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
           }`}
         >
           <Sparkles className="w-4 h-4 text-amber-500" />
-          <span>2. Interactive Play</span>
+          <span>1. Interactive Activities</span>
         </button>
 
         <button
@@ -172,7 +159,7 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
           }`}
         >
           <HelpCircle className="w-4 h-4 text-emerald-500" />
-          <span>3. Mastery Check</span>
+          <span>2. Mastery Check</span>
         </button>
 
         {step.decodableBook && (
@@ -185,53 +172,10 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
             }`}
           >
             <BookOpen className="w-4 h-4 text-purple-600" />
-            <span>4. Storybook</span>
+            <span>3. Decodable Story</span>
           </button>
         )}
       </div>
-
-      {/* TAB 1: VIDEO LESSON */}
-      {activeTab === "video" && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-md border border-slate-100">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-black text-slate-800 flex items-center gap-2">
-              <span className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm">
-                ▶
-              </span>
-              Lesson with Sir Xolo
-            </h2>
-            <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-600">
-              Duration: {step.videoDuration}
-            </span>
-          </div>
-
-          <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-900 shadow-inner flex items-center justify-center">
-            <div className="text-center p-6 text-white max-w-md">
-              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-tr from-amber-400 to-indigo-600 flex items-center justify-center shadow-lg cursor-pointer transform hover:scale-105 transition-transform">
-                <Play className="w-10 h-10 fill-white text-white ml-1" />
-              </div>
-              <h3 className="text-lg font-bold">Sir Xolo Teaching Video</h3>
-              <p className="text-xs text-slate-300 mt-1">
-                Short, high-energy concept breakdown with visual props and phonics articulation.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-100">
-            <div className="text-sm text-slate-600">
-              <span className="font-bold text-slate-800">Skills covered: </span>
-              {step.focusSkills.join(" • ")}
-            </div>
-            <button
-              onClick={() => setActiveTab("activity")}
-              className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-black text-sm flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
-            >
-              <span>Ready to Play Activities!</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* TAB 2: INTERACTIVE ACTIVITIES */}
       {activeTab === "activity" && currentActivity && (

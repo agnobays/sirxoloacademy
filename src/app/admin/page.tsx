@@ -174,7 +174,7 @@ export default function AdminPage() {
                     <span className="font-bold text-slate-900 block">
                       Step {s.stepNumber}: {s.title}
                     </span>
-                    <span className="text-slate-500">{s.videoDuration}</span>
+                    <span className="text-slate-500">{s.videoDuration || "Interactive Activities"}</span>
                   </div>
                   <button className="text-rose-600 hover:text-rose-800 p-1 cursor-pointer">
                     <Trash2 className="w-4 h-4" />
