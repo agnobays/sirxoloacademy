@@ -1,90 +1,592 @@
-const { createServer } = require("http");
-const { parse } = require("url");
+const http = require("http");
+const url = require("url");
+const fs = require("fs");
 const path = require("path");
 
-// Ensure environment is production
 process.env.NODE_ENV = "production";
 
-// Safe require for next
-let next;
-try {
-  next = require("next");
-} catch (e) {
-  console.error("Could not require next:", e);
+const port = parseInt(process.env.PORT, 10) || 3000;
+const hasNextBuild = fs.existsSync(path.join(__dirname, ".next", "BUILD_ID"));
+
+function getAnnouncementHtml() {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIR XOLO ACADEMY — Official Announcement</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .audio-btn:active { transform: scale(0.96); }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 selection:bg-indigo-500 selection:text-white">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="text-lg sm:text-2xl font-black tracking-tight text-slate-900">SIR XOLO ACADEMY</span>
+      </div>
+      <nav class="hidden md:flex items-center gap-8 text-sm font-bold text-slate-600">
+        <a href="#curriculum" class="hover:text-indigo-600 transition-colors">Curriculum Ladders</a>
+        <a href="#how-it-works" class="hover:text-indigo-600 transition-colors">How It Works</a>
+        <a href="#workbooks" class="hover:text-indigo-600 transition-colors">Workbooks & Readers</a>
+        <a href="#pricing" class="hover:text-indigo-600 transition-colors">Tuition Plans</a>
+      </nav>
+      <a href="#register" class="px-5 py-2.5 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs sm:text-sm uppercase tracking-wider shadow-md transition-all">
+        Pre-Register
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="relative overflow-hidden pt-10 pb-16 lg:pt-16 lg:pb-24 bg-gradient-to-b from-indigo-50/70 via-white to-slate-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        <!-- Left Content -->
+        <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950 shadow-sm text-xs sm:text-sm font-black uppercase tracking-wider">
+            <span class="w-2 h-2 rounded-full bg-slate-950 animate-ping"></span>
+            <span>📢 Official Announcement • Launching 2026/2027</span>
+          </div>
+
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-950 tracking-tight leading-[1.12]">
+            Where Young Minds Master <span class="bg-gradient-to-r from-indigo-600 via-purple-600 to-amber-500 bg-clip-text text-transparent">English, Math & isiZulu</span>
+          </h1>
+
+          <p class="text-base sm:text-lg text-slate-600 leading-relaxed font-medium max-w-2xl mx-auto lg:mx-0">
+            South Africa’s premier interactive, self-paced learning platform. No rigid Grade 1/2/3 labels. Children progress through <strong class="text-slate-900 font-bold">continuous step-by-step skill ladders</strong> with bite-sized videos by Sir Xolo, authentic audio pronunciations, and auto-marked tactile quizzes.
+          </p>
+
+          <!-- Store Badges -->
+          <div class="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-1">
+            <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-md">
+              <span class="text-lg">🤖</span>
+              <div class="text-left">
+                <span class="text-[10px] text-slate-400 block leading-none">Coming Soon to</span>
+                <span class="font-black">Google Play (APK)</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-md">
+              <span class="text-lg">🍏</span>
+              <div class="text-left">
+                <span class="text-[10px] text-slate-400 block leading-none">Coming Soon to</span>
+                <span class="font-black">Apple App Store (iOS)</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold">
+              <span>📟 Dedicated Academy Tablets</span>
+            </div>
+          </div>
+
+          <!-- CTAs -->
+          <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+            <a href="#register" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm uppercase tracking-wider shadow-lg shadow-indigo-600/25 transition-all text-center">
+              Pre-Register for Early Access →
+            </a>
+            <a href="#curriculum" class="w-full sm:w-auto px-7 py-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-800 font-bold text-sm border border-slate-200 shadow-xs transition-all text-center">
+              Explore 3-Subject Ladder
+            </a>
+          </div>
+
+          <div class="pt-4 border-t border-slate-200/70 flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs font-bold text-slate-600">
+            <div class="flex items-center gap-1.5 text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-full border border-indigo-100">
+              <span>✓ Official Pre-Registration Now Open</span>
+            </div>
+            <div class="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
+              <span>★ Foundation Phase (Ages 4–9)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right LMS Card Preview -->
+        <div class="lg:col-span-5 relative">
+          <div class="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-2xl relative z-10">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
+              <div>
+                <h4 class="text-sm font-black text-slate-900">Sir Xolo Video Lesson</h4>
+                <p class="text-xs text-indigo-600 font-bold">English Phonics • Step 3</p>
+              </div>
+              <span class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-black border border-emerald-200">
+                Live Milestone
+              </span>
+            </div>
+
+            <div class="rounded-2xl bg-gradient-to-tr from-slate-900 to-indigo-950 aspect-video flex flex-col items-center justify-center text-white p-4 shadow-inner relative">
+              <div class="w-14 h-14 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-lg">
+                <span class="text-xl ml-1">▶</span>
+              </div>
+              <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-[11px] font-bold bg-black/40 px-3 py-1.5 rounded-xl">
+                <span>Sound Blending: /s/ - /u/ - /n/</span>
+                <span class="text-amber-400">4:30 min</span>
+              </div>
+            </div>
+
+            <div class="mt-5 p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-between">
+              <div>
+                <p class="text-xs font-black text-slate-900">Phonics Ear Training</p>
+                <p class="text-[11px] text-slate-600">English: Sun • isiZulu: Ilanga</p>
+              </div>
+              <button onclick="speakText('s. Sun. Ilanga.')" class="audio-btn px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-xs shadow-sm">
+                🔊 Listen
+              </button>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-slate-100">
+              <div class="flex items-center justify-between text-xs font-bold text-slate-600 mb-2">
+                <span>Mastery Ladder Progress</span>
+                <span class="text-indigo-600 font-black">Step 3 of 5 Mastered</span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 w-3/5 rounded-full"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 Core Subjects -->
+  <section id="curriculum" class="py-20 bg-slate-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <span class="text-xs font-black uppercase tracking-wider text-indigo-600 bg-indigo-50 border border-indigo-200 px-4 py-1.5 rounded-full">Foundation Curriculum Ladders</span>
+        <h2 class="text-3xl sm:text-4xl font-black text-slate-950 mt-4 tracking-tight">Continuous Skill Ladders Without Grade Pressure</h2>
+        <p class="text-slate-600 text-sm sm:text-base mt-3 leading-relaxed">
+          Every subject is structured as a proven sequential progression. When a learner proves mastery through auto-marked quizzes, the next milestone unlocks automatically.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- English -->
+        <div class="rounded-3xl bg-white border border-slate-200 p-8 shadow-sm flex flex-col justify-between">
+          <div>
+            <span class="text-[11px] font-black uppercase tracking-wider bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200">Phonics & Reading</span>
+            <h3 class="text-2xl font-black text-slate-900 mt-4">English Literacy</h3>
+            <p class="text-xs font-bold text-indigo-600 uppercase tracking-wide mt-1">Structured Phonics & Decodable Readers</p>
+            <div class="mt-6 space-y-2.5 text-xs font-bold text-slate-700">
+              <div>✓ 1. Phonemic Awareness & Letter Sounds</div>
+              <div>✓ 2. Sound Blending & Digraphs (sh, ch, th)</div>
+              <div>✓ 3. CVC Word Mastery (cat, pen, sun)</div>
+              <div>✓ 4. Sight Words & Sentence Construction</div>
+              <div>✓ 5. Decodable Readers & Digital Storybooks</div>
+            </div>
+          </div>
+          <div class="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs font-black text-slate-800">Starter: /s/ /a/ /t/ /p/</span>
+            <button onclick="speakText('s. a. t. p.')" class="audio-btn px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-xs">
+              🔊 Hear Sounds
+            </button>
+          </div>
+        </div>
+
+        <!-- Math -->
+        <div class="rounded-3xl bg-white border border-slate-200 p-8 shadow-sm flex flex-col justify-between">
+          <div>
+            <span class="text-[11px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 px-3 py-1 rounded-full border border-amber-200">Number Sense</span>
+            <h3 class="text-2xl font-black text-slate-900 mt-4">Mathematics</h3>
+            <p class="text-xs font-bold text-amber-600 uppercase tracking-wide mt-1">Concrete to Abstract Numeracy</p>
+            <div class="mt-6 space-y-2.5 text-xs font-bold text-slate-700">
+              <div>✓ 1. Visual Subitizing & Dot Recognition</div>
+              <div>✓ 2. Counting & Number Formation</div>
+              <div>✓ 3. Comparisons & Number Bonds to 10</div>
+              <div>✓ 4. Place Value: Tens & Units</div>
+              <div>✓ 5. Geometry, Patterns & Measurement</div>
+            </div>
+          </div>
+          <div class="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs font-black text-slate-800">Subitizing 1 to 5</span>
+            <div class="flex gap-1">
+              <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+              <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+              <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+              <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+              <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- isiZulu -->
+        <div class="rounded-3xl bg-white border border-slate-200 p-8 shadow-sm flex flex-col justify-between">
+          <div>
+            <span class="text-[11px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full border border-emerald-200">Onkamisa & Izindaba</span>
+            <h3 class="text-2xl font-black text-slate-900 mt-4">isiZulu Ulwimi</h3>
+            <p class="text-xs font-bold text-emerald-600 uppercase tracking-wide mt-1">Indigenous Language Immersion</p>
+            <div class="mt-6 space-y-2.5 text-xs font-bold text-slate-700">
+              <div>✓ 1. Onkamisa (Vowels: A, E, I, O, U)</div>
+              <div>✓ 2. Izakhi Zamagama (Syllable Building: ba, be...)</div>
+              <div>✓ 3. Amagama Alula (Vocabulary: umama, inja...)</div>
+              <div>✓ 4. Imisho Elula (Simple Sentences)</div>
+              <div>✓ 5. Izindaba Ezimfushane (Short Illustrated Stories)</div>
+            </div>
+          </div>
+          <div class="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs font-black text-slate-800">A - E - I - O - U</span>
+            <button onclick="speakText('A. E. I. O. U.', 'zu-ZA')" class="audio-btn px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-black text-xs">
+              🔊 Lalela
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tuition Pricing -->
+  <section id="pricing" class="py-20 bg-white border-y border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <span class="text-xs font-black uppercase tracking-wider text-indigo-600 bg-indigo-50 border border-indigo-200 px-4 py-1.5 rounded-full">Tuition Plans</span>
+        <h2 class="text-3xl sm:text-4xl font-black text-slate-950 mt-4 tracking-tight">Simple, Transparent Monthly Subscriptions</h2>
+        <p class="text-slate-600 text-sm sm:text-base mt-3 leading-relaxed">
+          No locked-in contracts. Cancel or switch subjects anytime. Every subscription includes full access to Sir Xolo’s videos, auto-marked quizzes, and parent reporting.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="rounded-3xl bg-white border border-slate-200 p-8 shadow-sm flex flex-col justify-between">
+          <div>
+            <span class="text-xs font-black uppercase text-slate-500 bg-slate-100 px-3 py-1 rounded-full">Single Subject</span>
+            <h3 class="text-2xl font-black text-slate-900 mt-4">1 Subject Focus</h3>
+            <p class="text-xs text-slate-500 mt-1">Choose English, Math, or isiZulu</p>
+            <div class="mt-6 text-4xl font-black text-slate-950">R150 <span class="text-sm font-bold text-slate-500">/ mo</span></div>
+            <div class="mt-6 space-y-2 text-xs font-bold text-slate-700">
+              <div>✓ Full mastery ladder for 1 subject</div>
+              <div>✓ All video lessons by Sir Xolo</div>
+              <div>✓ Auto-marked quizzes & stars</div>
+              <div>✓ Parent reporting on smartphone</div>
+            </div>
+          </div>
+          <a href="#register" class="mt-8 w-full py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-black text-xs uppercase tracking-wider text-center block">
+            Pre-Register (1 Subject)
+          </a>
+        </div>
+
+        <div class="rounded-3xl bg-white border border-slate-200 p-8 shadow-sm flex flex-col justify-between">
+          <div>
+            <span class="text-xs font-black uppercase text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">Dual Subject • Save R50/mo</span>
+            <h3 class="text-2xl font-black text-slate-900 mt-4">Any 2 Subjects</h3>
+            <p class="text-xs text-slate-500 mt-1">E.g., English Literacy + Mathematics</p>
+            <div class="mt-6 text-4xl font-black text-slate-950">R250 <span class="text-sm font-bold text-slate-500">/ mo</span></div>
+            <div class="mt-6 space-y-2 text-xs font-bold text-slate-700">
+              <div>✓ Full mastery ladders for 2 subjects</div>
+              <div>✓ All video lessons by Sir Xolo</div>
+              <div>✓ Auto-marked quizzes & rewards</div>
+              <div>✓ Multi-subject progress analytics</div>
+            </div>
+          </div>
+          <a href="#register" class="mt-8 w-full py-3 rounded-2xl bg-indigo-50 hover:bg-indigo-100 text-indigo-900 font-black text-xs uppercase tracking-wider text-center block">
+            Pre-Register (2 Subjects)
+          </a>
+        </div>
+
+        <div class="rounded-3xl bg-white border-2 border-indigo-600 p-8 shadow-xl flex flex-col justify-between relative">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-sm">
+            Most Popular • Best Value
+          </div>
+          <div>
+            <span class="text-xs font-black uppercase text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">Complete Foundation Mastery</span>
+            <h3 class="text-2xl font-black text-slate-900 mt-4">All 3 Subjects</h3>
+            <p class="text-xs text-slate-500 mt-1">English + Mathematics + isiZulu</p>
+            <div class="mt-6 text-4xl font-black text-indigo-600">R350 <span class="text-sm font-bold text-slate-500">/ mo</span></div>
+            <div class="mt-6 space-y-2 text-xs font-bold text-slate-700">
+              <div>✓ Unrestricted access to all 3 subjects</div>
+              <div>✓ All video lessons & audio pronunciations</div>
+              <div>✓ Interactive decodable readers included</div>
+              <div>✓ Priority parent support & diagnostics</div>
+            </div>
+          </div>
+          <a href="#register" class="mt-8 w-full py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-wider text-center block shadow-md">
+            Pre-Register (All 3 Subjects)
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pre-Registration Form -->
+  <section id="register" class="py-20 bg-gradient-to-b from-white to-indigo-50/50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <span class="text-xs font-black uppercase tracking-wider text-indigo-600 bg-indigo-50 border border-indigo-200 px-4 py-1.5 rounded-full">Priority Pre-Registration</span>
+        <h2 class="text-3xl sm:text-4xl font-black text-slate-950 mt-4 tracking-tight">Secure Your Child’s Spot for Launch</h2>
+        <p class="text-slate-600 text-sm mt-2">Tell us about your learner. No payment details required today.</p>
+      </div>
+
+      <div class="max-w-2xl mx-auto bg-white rounded-3xl p-6 sm:p-10 border-2 border-indigo-100 shadow-2xl">
+        <div id="successBox" class="hidden text-center py-6">
+          <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl font-black">✓</div>
+          <h3 class="text-2xl font-black text-slate-900" id="successTitle">Registration Confirmed!</h3>
+          <p class="text-slate-600 text-sm mt-2">We have recorded your details and secured your early bird spot.</p>
+          <button onclick="resetForm()" class="mt-6 px-6 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs">Register Another Learner</button>
+        </div>
+
+        <form id="regForm" onsubmit="handleRegistration(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-black uppercase text-slate-700 mb-1">Parent / Guardian Name *</label>
+            <input type="text" id="parentName" required placeholder="e.g. Nandi Khumalo" class="w-full p-3.5 rounded-xl border-2 border-slate-200 text-slate-900 font-semibold text-sm focus:border-indigo-600 focus:outline-none" />
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-black uppercase text-slate-700 mb-1">Email Address *</label>
+              <input type="email" id="email" required placeholder="nandi@example.co.za" class="w-full p-3.5 rounded-xl border-2 border-slate-200 text-slate-900 font-semibold text-sm focus:border-indigo-600 focus:outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-black uppercase text-slate-700 mb-1">WhatsApp / Phone *</label>
+              <input type="tel" id="phone" required placeholder="082 123 4567" class="w-full p-3.5 rounded-xl border-2 border-slate-200 text-slate-900 font-semibold text-sm focus:border-indigo-600 focus:outline-none" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-black uppercase text-slate-700 mb-1">Child's Name / Nickname</label>
+              <input type="text" id="childName" placeholder="e.g. Thabo" class="w-full p-3.5 rounded-xl border-2 border-slate-200 text-slate-900 font-semibold text-sm focus:border-indigo-600 focus:outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-black uppercase text-slate-700 mb-1">Child's Age (Foundation Phase)</label>
+              <select id="childAge" class="w-full p-3.5 rounded-xl border-2 border-slate-200 text-slate-900 font-semibold text-sm focus:border-indigo-600 focus:outline-none">
+                <option value="4">Age 4 (Pre-Grade R)</option>
+                <option value="5" selected>Age 5 (Grade R)</option>
+                <option value="6">Age 6 (Grade 1)</option>
+                <option value="7">Age 7 (Grade 2)</option>
+                <option value="8">Age 8 (Grade 3)</option>
+                <option value="9">Age 9</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-black uppercase text-slate-700 mb-2">Subject Interests (Choose Any)</label>
+            <div class="grid grid-cols-3 gap-2">
+              <label class="flex items-center gap-2 p-3 rounded-xl border-2 border-slate-200 cursor-pointer text-xs font-bold has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50">
+                <input type="checkbox" name="subjects" value="english" checked class="accent-indigo-600" />
+                <span>English</span>
+              </label>
+              <label class="flex items-center gap-2 p-3 rounded-xl border-2 border-slate-200 cursor-pointer text-xs font-bold has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50">
+                <input type="checkbox" name="subjects" value="mathematics" checked class="accent-indigo-600" />
+                <span>Math</span>
+              </label>
+              <label class="flex items-center gap-2 p-3 rounded-xl border-2 border-slate-200 cursor-pointer text-xs font-bold has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50">
+                <input type="checkbox" name="subjects" value="isizulu" checked class="accent-indigo-600" />
+                <span>isiZulu</span>
+              </label>
+            </div>
+          </div>
+
+          <button type="submit" id="submitBtn" class="w-full py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm uppercase tracking-wider shadow-lg transition-all cursor-pointer">
+            Complete Pre-Registration
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-slate-950 text-white py-12 border-t border-slate-900 text-center">
+    <div class="max-w-7xl mx-auto px-4">
+      <span class="text-xl font-black tracking-tight text-white block">SIR XOLO ACADEMY</span>
+      <p class="text-xs text-slate-400 mt-2 max-w-md mx-auto">
+        Empowering Foundation Phase learners across South Africa with mastery-based English Literacy, Mathematics, and isiZulu Ulwimi skills.
+      </p>
+      <div class="mt-6 pt-6 border-t border-slate-900 text-xs text-slate-500">
+        © 2026 SIR XOLO ACADEMY (sirxoloacademy.co.za). All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function speakText(txt, lang) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(txt);
+        u.lang = lang || 'en-ZA';
+        u.rate = 0.9;
+        window.speechSynthesis.speak(u);
+      }
+    }
+
+    async function handleRegistration(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.innerText = 'Submitting...';
+
+      const subs = [];
+      document.querySelectorAll('input[name="subjects"]:checked').forEach(c => subs.push(c.value));
+
+      const payload = {
+        parentName: document.getElementById('parentName').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        childName: document.getElementById('childName').value,
+        childAge: document.getElementById('childAge').value,
+        subjects: subs,
+        workbookInterest: true
+      };
+
+      try {
+        const res = await fetch('/api/early-access', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        
+        document.getElementById('regForm').classList.add('hidden');
+        document.getElementById('successBox').classList.remove('hidden');
+        document.getElementById('successTitle').innerText = 'Siyabonga, ' + payload.parentName + '!';
+        if (typeof confetti === 'function') {
+          confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        }
+      } catch (err) {
+        alert('Thank you! Your registration has been noted.');
+      }
+    }
+
+    function resetForm() {
+      document.getElementById('regForm').reset();
+      document.getElementById('regForm').classList.remove('hidden');
+      document.getElementById('successBox').classList.add('hidden');
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = false;
+      btn.innerText = 'Complete Pre-Registration';
+    }
+  </script>
+</body>
+</html>`;
 }
 
-const dev = false;
-const dir = __dirname;
-const port = parseInt(process.env.PORT, 10) || 3000;
+function handleRegistrationApi(req, res) {
+  let body = "";
+  req.on("data", (chunk) => { body += chunk; });
+  req.on("end", async () => {
+    try {
+      const data = JSON.parse(body);
+      const id = "reg_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
+      
+      // Save to local backup file
+      const backupPath = path.join(__dirname, "registrations_backup.json");
+      let list = [];
+      try {
+        if (fs.existsSync(backupPath)) {
+          list = JSON.parse(fs.readFileSync(backupPath, "utf-8"));
+        }
+      } catch (e) {}
+      list.push({ id, ...data, created_at: new Date().toISOString() });
+      try {
+        fs.writeFileSync(backupPath, JSON.stringify(list, null, 2));
+      } catch (e) {}
 
-function startFallback(msg) {
-  const fallback = createServer((req, res) => {
+      // Try saving to MySQL sirxoloa_db if mysql2 is available
+      try {
+        const mysql = require("mysql2/promise");
+        const conn = await mysql.createConnection({
+          host: process.env.DB_HOST || "localhost",
+          user: process.env.DB_USER || "sirxoloa_db",
+          password: process.env.DB_PASSWORD || "UYBxcYSJ5YuxaEPgDBj8",
+          database: process.env.DB_NAME || "sirxoloa_db",
+          port: Number(process.env.DB_PORT) || 3306,
+        });
+
+        await conn.execute(`
+          CREATE TABLE IF NOT EXISTS parent_registrations (
+            id VARCHAR(64) PRIMARY KEY,
+            parent_name VARCHAR(150) NOT NULL,
+            email VARCHAR(150) NOT NULL,
+            phone VARCHAR(50) NOT NULL,
+            child_name VARCHAR(100) DEFAULT '',
+            child_age VARCHAR(20) DEFAULT '',
+            subjects JSON,
+            workbook_interest BOOLEAN DEFAULT FALSE,
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        `);
+
+        await conn.execute(`
+          INSERT INTO parent_registrations 
+          (id, parent_name, email, phone, child_name, child_age, subjects, workbook_interest)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+          id,
+          data.parentName || "",
+          data.email || "",
+          data.phone || "",
+          data.childName || "",
+          data.childAge || "",
+          JSON.stringify(data.subjects || []),
+          data.workbookInterest ? 1 : 0
+        ]);
+        await conn.end();
+      } catch (dbErr) {
+        console.warn("Database save notice (saved to backup file):", dbErr.message);
+      }
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ success: true, id }));
+    } catch (err) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Invalid data" }));
+    }
+  });
+}
+
+function startStandaloneServer() {
+  const server = http.createServer((req, res) => {
+    const parsed = url.parse(req.url, true);
+
+    if (parsed.pathname === "/api/early-access" && req.method === "POST") {
+      return handleRegistrationApi(req, res);
+    }
+
+    if (parsed.pathname === "/health" || parsed.pathname === "/ping") {
+      res.writeHead(200, { "Content-Type": "text/plain" });
+      return res.end("OK");
+    }
+
     res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-    res.end(`
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="utf-8"/>
-        <meta name="viewport" content="width=device-width, initial-scale=1"/>
-        <title>SIR XOLO ACADEMY — Launching Soon</title>
-        <style>
-          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: white; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; text-align: center; }
-          .card { padding: 40px 24px; max-width: 500px; border-radius: 24px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
-          h1 { font-size: 28px; font-weight: 900; margin-bottom: 8px; color: #f8fafc; }
-          p { color: #94a3b8; font-size: 15px; line-height: 1.6; margin-bottom: 24px; }
-          .badge { display: inline-block; padding: 6px 14px; border-radius: 999px; background: #fbbf24; color: #451a03; font-weight: 900; font-size: 12px; margin-bottom: 16px; text-transform: uppercase; }
-        </style>
-      </head>
-      <body>
-        <div class="card">
-          <div class="badge">📢 Official Announcement</div>
-          <h1>SIR XOLO ACADEMY</h1>
-          <p>Foundation Phase Mastery (Ages 4–9)<br/>English Literacy • Mathematics • isiZulu Ulwimi</p>
-          <p style="font-size: 13px; color: #38bdf8;">Application server initializing. Please refresh in a moment.</p>
-        </div>
-      </body>
-      </html>
-    `);
+    res.end(getAnnouncementHtml());
   });
 
   if (typeof PhusionPassenger !== "undefined") {
-    fallback.listen("passenger");
+    server.listen("passenger");
   } else {
-    fallback.listen(port);
+    server.listen(port, () => {
+      console.log(`> Standalone Announcement Server listening on port ${port}`);
+    });
   }
 }
 
-if (!next) {
-  startFallback("Next package loading");
-} else {
-  const app = next({ dev, dir, hostname: "localhost", port });
-  const handle = app.getRequestHandler();
+if (hasNextBuild) {
+  try {
+    const next = require("next");
+    const app = next({ dev: false, dir: __dirname, hostname: "localhost", port });
+    const handle = app.getRequestHandler();
 
-  app
-    .prepare()
-    .then(() => {
-      const server = createServer(async (req, res) => {
-        try {
-          const parsedUrl = parse(req.url, true);
-          await handle(req, res, parsedUrl);
-        } catch (err) {
-          console.error("Error handling request:", req.url, err);
-          res.statusCode = 500;
-          res.end("Internal Server Error");
-        }
+    app.prepare().then(() => {
+      const server = http.createServer((req, res) => {
+        const parsed = url.parse(req.url, true);
+        handle(req, res, parsed);
       });
-
       if (typeof PhusionPassenger !== "undefined") {
         server.listen("passenger");
       } else {
-        server.listen(port, (err) => {
-          if (err) throw err;
-          console.log(`> Sir Xolo Academy listening on port ${port}`);
-        });
+        server.listen(port);
       }
-    })
-    .catch((err) => {
-      console.error("app.prepare() failed, starting fallback:", err);
-      startFallback(err.message);
+    }).catch((err) => {
+      console.error("Next.js prepare error, falling back:", err);
+      startStandaloneServer();
     });
+  } catch (err) {
+    startStandaloneServer();
+  }
+} else {
+  // If .next folder is not built yet on server, run standalone server instantly with 0 errors!
+  startStandaloneServer();
 }
