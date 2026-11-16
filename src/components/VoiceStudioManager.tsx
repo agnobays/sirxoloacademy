@@ -18,55 +18,174 @@ interface VoiceItemDef {
   key: string;
   name: string;
   sublabel: string;
-  category: "isizulu" | "feedback";
+  category:
+    | "isizulu_sentences"
+    | "isizulu_vowels"
+    | "isizulu_questions"
+    | "isizulu_clicks"
+    | "feedback"
+    | "english";
   sampleScript: string;
   defaultAudioUrl: string;
 }
 
 const VOICE_ITEMS: VoiceItemDef[] = [
+  // --- ISIZULU SENTENCES & STORIES ---
+  {
+    key: "zulu_story_1",
+    name: "Indaba Page 1 (Inja Yami uBobi)",
+    sublabel: "Sentence: 'Lena inja yami. Igama layo nguBobi.'",
+    category: "isizulu_sentences",
+    sampleScript: "Say with warmth: 'Lena inja yami. Igama layo nguBobi.'",
+    defaultAudioUrl: "",
+  },
+  {
+    key: "zulu_story_2",
+    name: "Indaba Page 2 (Inja Yami uBobi)",
+    sublabel: "Sentence: 'UBobi uyagijima egcekeni. UBobi uyathanda ukudlala.'",
+    category: "isizulu_sentences",
+    sampleScript: "Say energetically: 'UBobi uyagijima egcekeni. UBobi uyathanda ukudlala.'",
+    defaultAudioUrl: "",
+  },
+  {
+    key: "zulu_story_3",
+    name: "Indaba Page 3 (Inja Yami uBobi)",
+    sublabel: "Sentence: 'UBobi uyabukeka ejabule kakhulu. Ngiyayithanda inja yami!'",
+    category: "isizulu_sentences",
+    sampleScript: "Say happily: 'UBobi uyabukeka ejabule kakhulu. Ngiyayithanda inja yami!'",
+    defaultAudioUrl: "",
+  },
+  {
+    key: "zulu_blend_ba",
+    name: "Izakhi Zamagama (Ba - Be - Bi - Bo - Bu)",
+    sublabel: "Syllable blending practice sentence",
+    category: "isizulu_sentences",
+    sampleScript: "Say rhythmically: 'Ba... Be... Bi... Bo... Bu'",
+    defaultAudioUrl: "",
+  },
+
+  // --- ISIZULU ONKAMISA (VOWELS) ---
   {
     key: "a",
-    name: "Inhlamvu 'A' (Onkamisa)",
+    name: "Onkamisa 'A'",
     sublabel: "isiZulu Vowel /a/ sound",
-    category: "isizulu",
+    category: "isizulu_vowels",
     sampleScript: "Say clearly: 'Ah... Ah... Amaqanda'",
     defaultAudioUrl: "/audio/phonics/a.mp3",
   },
   {
-    key: "b",
-    name: "Inhlamvu 'B' (Ongwaqa)",
-    sublabel: "isiZulu Consonant /b/ sound",
-    category: "isizulu",
-    sampleScript: "Say clearly: 'Buh... Buh... Ubaba'",
-    defaultAudioUrl: "/audio/phonics/b.mp3",
-  },
-  {
-    key: "c",
-    name: "Inhlamvu 'C' (Uchwaza Click)",
-    sublabel: "isiZulu Dental Click /c/ sound",
-    category: "isizulu",
-    sampleScript: "Make crisp dental click: 'C... C... Icula'",
-    defaultAudioUrl: "/audio/phonics/c.mp3",
-  },
-  {
-    key: "d",
-    name: "Inhlamvu 'D' (Ongwaqa)",
-    sublabel: "isiZulu Consonant /d/ sound",
-    category: "isizulu",
-    sampleScript: "Say clearly: 'Duh... Duh... Idada'",
-    defaultAudioUrl: "/audio/phonics/d.mp3",
-  },
-  {
     key: "e",
-    name: "Inhlamvu 'E' (Onkamisa)",
+    name: "Onkamisa 'E'",
     sublabel: "isiZulu Vowel /e/ sound",
-    category: "isizulu",
+    category: "isizulu_vowels",
     sampleScript: "Say clearly: 'Eh... Eh... Ekhaya'",
     defaultAudioUrl: "/audio/phonics/e.mp3",
   },
   {
+    key: "i",
+    name: "Onkamisa 'I'",
+    sublabel: "isiZulu Vowel /i/ sound",
+    category: "isizulu_vowels",
+    sampleScript: "Say clearly: 'Ee... Ee... Imoto'",
+    defaultAudioUrl: "/audio/phonics/i.mp3",
+  },
+  {
+    key: "o",
+    name: "Onkamisa 'O'",
+    sublabel: "isiZulu Vowel /o/ sound",
+    category: "isizulu_vowels",
+    sampleScript: "Say clearly: 'Oh... Oh... Ogogo'",
+    defaultAudioUrl: "/audio/phonics/o.mp3",
+  },
+  {
+    key: "u",
+    name: "Onkamisa 'U'",
+    sublabel: "isiZulu Vowel /u/ sound",
+    category: "isizulu_vowels",
+    sampleScript: "Say clearly: 'Oo... Oo... Ubaba'",
+    defaultAudioUrl: "/audio/phonics/u.mp3",
+  },
+
+  // --- ISIZULU QUESTIONS & ACTIVITIES ---
+  {
+    key: "zulu_quiz_1",
+    name: "Imibuzo 1: Bangaki onkamisa?",
+    sublabel: "Quiz question 1 audio prompt",
+    category: "isizulu_questions",
+    sampleScript: "Say clearly: 'Bangaki onkamisa besiZulu? Bala kanye nami!'",
+    defaultAudioUrl: "",
+  },
+  {
+    key: "zulu_quiz_2",
+    name: "Imibuzo 2: Igama elithi 'Amaqanda'",
+    sublabel: "Quiz question 2 audio prompt",
+    category: "isizulu_questions",
+    sampleScript: "Say clearly: 'Igama elithi Amaqanda liqala ngamuphi onkamisa?'",
+    defaultAudioUrl: "",
+  },
+  {
+    key: "zulu_act_1",
+    name: "Umsebenzi 1: Umsindo /a/",
+    sublabel: "Matching activity audio prompt",
+    category: "isizulu_questions",
+    sampleScript: "Say clearly: 'Iyiphi inhlamvu ekhuluma umsindo othi ah? Njengakwi-Amaqanda!'",
+    defaultAudioUrl: "",
+  },
+  {
+    key: "zulu_act_trace_a",
+    name: "Umsebenzi 2: Ukubhala onkamisa 'A'",
+    sublabel: "Finger tracing audio prompt",
+    category: "isizulu_questions",
+    sampleScript: "Say warmly: 'Bhala onkamisa A ngomunwe wakho! Landela imigqa yokubhala.'",
+    defaultAudioUrl: "",
+  },
+
+  // --- ISIZULU CLICKS & CONSONANTS ---
+  {
+    key: "c",
+    name: "Uchwaza 'C' (Dental Click)",
+    sublabel: "isiZulu Dental Click /c/ sound",
+    category: "isizulu_clicks",
+    sampleScript: "Make crisp dental click: 'C... C... Icula'",
+    defaultAudioUrl: "/audio/phonics/c.mp3",
+  },
+  {
+    key: "q",
+    name: "Uchwaza 'Q' (Palatal Click)",
+    sublabel: "isiZulu Palatal Click /q/ sound",
+    category: "isizulu_clicks",
+    sampleScript: "Make crisp click: 'Q... Q... Iqanda'",
+    defaultAudioUrl: "",
+  },
+  {
+    key: "x",
+    name: "Uchwaza 'X' (Lateral Click)",
+    sublabel: "isiZulu Lateral Click /x/ sound",
+    category: "isizulu_clicks",
+    sampleScript: "Make crisp side click: 'X... X... Ixoxo'",
+    defaultAudioUrl: "",
+  },
+  {
+    key: "b",
+    name: "Ongwaqa 'B'",
+    sublabel: "isiZulu Consonant /b/ sound",
+    category: "isizulu_clicks",
+    sampleScript: "Say clearly: 'Buh... Buh... Ubaba'",
+    defaultAudioUrl: "/audio/phonics/b.mp3",
+  },
+  {
+    key: "d",
+    name: "Ongwaqa 'D'",
+    sublabel: "isiZulu Consonant /d/ sound",
+    category: "isizulu_clicks",
+    sampleScript: "Say clearly: 'Duh... Duh... Idada'",
+    defaultAudioUrl: "/audio/phonics/d.mp3",
+  },
+
+  // --- PRAISE & ENCOURAGEMENT ---
+  {
     key: "correct",
-    name: "Praise & Correct Answer Audio",
+    name: "Praise & Celebration (Halala!)",
     sublabel: "Celebration sound when a child gets it right",
     category: "feedback",
     sampleScript: "Say with high energy: 'Halala! Kuhle kakhulu! You got it right!'",
@@ -74,11 +193,37 @@ const VOICE_ITEMS: VoiceItemDef[] = [
   },
   {
     key: "retry",
-    name: "Encouraging Retry Audio",
+    name: "Encouraging Retry (Zama Futhi!)",
     sublabel: "Gentle motivation when a child needs another try",
     category: "feedback",
     sampleScript: "Say gently: 'Zama futhi mfundi wami! Try one more time, you can do it!'",
     defaultAudioUrl: "",
+  },
+
+  // --- ENGLISH PHONICS ---
+  {
+    key: "s",
+    name: "English Sound /s/",
+    sublabel: "Letter 's' phonics sound",
+    category: "english",
+    sampleScript: "Say clearly: 'Ssss... Ssss... like a snake'",
+    defaultAudioUrl: "/audio/phonics/s.mp3",
+  },
+  {
+    key: "t",
+    name: "English Sound /t/",
+    sublabel: "Letter 't' phonics sound",
+    category: "english",
+    sampleScript: "Say crisply: 'Tuh... Tuh... like tiger'",
+    defaultAudioUrl: "/audio/phonics/t.mp3",
+  },
+  {
+    key: "p",
+    name: "English Sound /p/",
+    sublabel: "Letter 'p' phonics sound",
+    category: "english",
+    sampleScript: "Say with pop: 'Puh... Puh... like popcorn'",
+    defaultAudioUrl: "/audio/phonics/p.mp3",
   },
 ];
 
@@ -91,7 +236,14 @@ export default function VoiceStudioManager() {
   const [recordingKey, setRecordingKey] = useState<string | null>(null);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [micLevel, setMicLevel] = useState(0);
-  const [activeTab, setActiveTab] = useState<"isizulu" | "feedback">("isizulu");
+  const [activeTab, setActiveTab] = useState<
+    | "isizulu_sentences"
+    | "isizulu_vowels"
+    | "isizulu_questions"
+    | "isizulu_clicks"
+    | "feedback"
+    | "english"
+  >("isizulu_sentences");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [playbackError, setPlaybackError] = useState<string | null>(null);
   const [previewPlayingKey, setPreviewPlayingKey] = useState<string | null>(null);
@@ -402,26 +554,84 @@ export default function VoiceStudioManager() {
         </div>
 
         {/* Tab Filter */}
-        <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 shrink-0">
+        <div className="flex flex-wrap items-center gap-1.5 bg-slate-100 p-1.5 rounded-2xl border border-slate-200">
           <button
-            onClick={() => setActiveTab("isizulu")}
-            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
-              activeTab === "isizulu"
+            onClick={() => setActiveTab("isizulu_sentences")}
+            className={`px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 ${
+              activeTab === "isizulu_sentences"
+                ? "bg-white text-purple-700 shadow-sm"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            <span>📖 Imisho & Indaba</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-900 font-bold">
+              4
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab("isizulu_vowels")}
+            className={`px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 ${
+              activeTab === "isizulu_vowels"
+                ? "bg-white text-emerald-700 shadow-sm"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            <span>🅰️ Onkamisa (A, E, I, O, U)</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-bold">
+              5
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab("isizulu_questions")}
+            className={`px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 ${
+              activeTab === "isizulu_questions"
                 ? "bg-white text-indigo-700 shadow-sm"
                 : "text-slate-600 hover:text-slate-900"
             }`}
           >
-            isiZulu Sounds (A, B, C, D, E)
+            <span>❓ Imibuzo (Questions)</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-900 font-bold">
+              4
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab("isizulu_clicks")}
+            className={`px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 ${
+              activeTab === "isizulu_clicks"
+                ? "bg-white text-teal-700 shadow-sm"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            <span>🗣️ Uchwaza & Ongwaqa</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-teal-100 text-teal-900 font-bold">
+              5
+            </span>
           </button>
           <button
             onClick={() => setActiveTab("feedback")}
-            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 ${
               activeTab === "feedback"
-                ? "bg-white text-indigo-700 shadow-sm"
+                ? "bg-white text-amber-700 shadow-sm"
                 : "text-slate-600 hover:text-slate-900"
             }`}
           >
-            Praise & Corrections
+            <span>🎉 Ukubonga (Praise)</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold">
+              2
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab("english")}
+            className={`px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 ${
+              activeTab === "english"
+                ? "bg-white text-blue-700 shadow-sm"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            <span>🔤 English Phonics</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-900 font-bold">
+              3
+            </span>
           </button>
         </div>
       </div>

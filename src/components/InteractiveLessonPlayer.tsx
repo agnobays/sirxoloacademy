@@ -453,7 +453,12 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
                     <span className="text-indigo-600 mr-2">{qIdx + 1}.</span>
                     {q.prompt}
                   </p>
-                  <AudioButton textToSpeak={q.prompt} size="sm" label="Read" />
+                  <AudioButton
+                    textToSpeak={q.prompt}
+                    soundKey={subject.id === "isizulu" ? `zulu_quiz_${qIdx + 1}` : undefined}
+                    size="sm"
+                    label="Read"
+                  />
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -519,13 +524,23 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
                 </div>
 
                 {nextStep && isMastered && (
-                  <Link
-                    href={`/learn/${subject.id}/${nextStep.id}`}
-                    className="px-6 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm flex items-center gap-2 shadow-lg transition-transform hover:scale-105"
-                  >
-                    <span>Proceed to Step {nextStep.stepNumber}</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </Link>
+                  nextStep.isLocked ? (
+                    <Link
+                      href="/store"
+                      className="px-6 py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-300 active:scale-95 text-amber-950 font-black text-sm flex items-center gap-2 shadow-lg transition-transform hover:scale-105 cursor-pointer"
+                    >
+                      <Lock className="w-4 h-4 text-amber-900" />
+                      <span>Unlock Step {nextStep.stepNumber} (Full Access)</span>
+                    </Link>
+                  ) : (
+                    <Link
+                      href={`/learn/${subject.id}/${nextStep.id}`}
+                      className="px-6 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm flex items-center gap-2 shadow-lg transition-transform hover:scale-105"
+                    >
+                      <span>Proceed to Step {nextStep.stepNumber}</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  )
                 )}
               </div>
             )}
@@ -545,6 +560,7 @@ export default function InteractiveLessonPlayer({ step, subject, nextStep }: Pro
             </div>
             <AudioButton
               textToSpeak={step.decodableBook.pages[storyPage]?.text || ""}
+              soundKey={subject.id === "isizulu" ? `zulu_story_${storyPage + 1}` : undefined}
               label="Read Page"
               size="md"
             />

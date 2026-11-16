@@ -244,38 +244,62 @@ class AudioEngine {
     await this.speakUtterance(promptText, lang);
   }
 
+  // Direct audio file player with Promise resolution
+  playDirectAudio(url: string): Promise<boolean> {
+    if (typeof window === "undefined" || !url) return Promise.resolve(false);
+
+    return new Promise((resolve) => {
+      try {
+        const audio = new Audio(url);
+        audio.currentTime = 0;
+        audio.onended = () => resolve(true);
+        audio.onerror = () => resolve(false);
+
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((err) => {
+            console.warn("Direct audio playback blocked or failed:", err);
+            resolve(false);
+          });
+        }
+      } catch {
+        resolve(false);
+      }
+    });
+  }
+
   // Play authentic recorded letter sound file (supports Mr. Xolo's custom recording or default)
   async playRecordedPhoneme(letter: string): Promise<boolean> {
     const clean = letter.trim().toLowerCase().replace(/[^a-z]/g, "");
     if (!clean) return false;
 
     const audioPath = await resolveSoundUrl(clean);
+    if (!audioPath) return false;
 
-    return new Promise((resolve) => {
-      if (typeof window === "undefined") {
-        resolve(false);
-        return;
-      }
+    return this.playDirectAudio(audioPath);
+  }
 
-      const audio = new Audio(audioPath);
+  // Smart Speech / Sound Player:
+  // 1. Checks if Mr. Xolo recorded this sentence/prompt/question
+  // 2. If recorded, plays Mr. Xolo's authentic voice
+  // 3. Otherwise, falls back to pedagogical TTS speech
+  async speakSmart(options: {
+    text: string;
+    soundKey?: string;
+    targetLetter?: string;
+    lang?: string;
+  }): Promise<void> {
+    const { text, soundKey, targetLetter, lang = "en-ZA" } = options;
 
-      audio.onended = () => {
-        resolve(true);
-      };
+    const key = soundKey || text;
+    const resolvedUrl = await resolveSoundUrl(key);
 
-      audio.onerror = () => {
-        console.warn(`Could not load audio path: ${audioPath}`);
-        resolve(false);
-      };
+    if (resolvedUrl) {
+      const played = await this.playDirectAudio(resolvedUrl);
+      if (played) return;
+    }
 
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise.catch((err) => {
-          console.warn(`Autoplay blocked for ${clean}:`, err);
-          resolve(false);
-        });
-      }
-    });
+    await this.speakQuestion(text, targetLetter, lang);
   }
 
   // Speak a standalone phonics sound (plays authentic recorded MP3, fallback to TTS)

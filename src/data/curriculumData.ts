@@ -285,6 +285,13 @@ export const SKILL_STEPS: SkillStep[] = [
         correctIndex: 1,
         explanation: "Onkamisa besiZulu bahlanu: A, E, I, O, U!",
       },
+      {
+        id: "zulu-q2",
+        prompt: "Igama elithi 'Amaqanda' liqala ngamuphi onkamisa?",
+        options: ["A", "E", "I", "U"],
+        correctIndex: 0,
+        explanation: "Igama elithi Amaqanda liqala ngonkamisa 'A'!",
+      },
     ],
     decodableBook: {
       id: "book-inja-yami",
@@ -302,6 +309,11 @@ export const SKILL_STEPS: SkillStep[] = [
           pageNumber: 2,
           text: "UBobi uyagijima egcekeni. UBobi uyathanda ukudlala.",
           illustration: "🎾",
+        },
+        {
+          pageNumber: 3,
+          text: "UBobi uyabukeka ejabule kakhulu. Ngiyayithanda inja yami!",
+          illustration: "❤️",
         },
       ],
     },
